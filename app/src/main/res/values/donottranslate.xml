@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="developer" translatable="false">Michael N.</string>
+
+    <string name="paypal" translatable="false">Paypal</string>
+
+    <string name="ym_account" translatable="false">4100 1537 2205 898</string>
+
+    <string name="ruble_sign" translatable="false">₽</string>
+    <string name="dollar_sign" translatable="false">$</string>
+
+    <string name="grid_size_1" translatable="false">1</string>
+    <string name="grid_size_2" translatable="false">2</string>
+    <string name="grid_size_3" translatable="false">3</string>
+    <string name="grid_size_4" translatable="false">4</string>
+    <string name="grid_size_5" translatable="false">5</string>
+    <string name="grid_size_6" translatable="false">6</string>
+    <string name="grid_size_7" translatable="false">7</string>
+    <string name="grid_size_8" translatable="false">8</string>
+
+    <string name="license_dialog_style" translatable="false">
+        body {
+            background-color: #{bg-color};
+            color: #{text-color};
+            font-family: sans-serif;
+            overflow-wrap: break-word;
+        }
+        pre {
+            background-color: #{license-bg-color};
+            padding: 1em;
+            white-space: pre-wrap;
+        }
+    </string>
+
+</resources>
