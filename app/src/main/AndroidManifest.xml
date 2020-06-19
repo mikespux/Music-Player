@@ -26,10 +26,9 @@
         android:requestLegacyExternalStorage="true"
         tools:ignore="UnusedAttribute"
         android:usesCleartextTraffic="true">
-
-        <meta-data
+           <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-1728811331988249~8214877961"/>
+            android:value="@string/ad_unit_id"/>
 
         <activity
             android:name=".ui.activities.MainActivity"
