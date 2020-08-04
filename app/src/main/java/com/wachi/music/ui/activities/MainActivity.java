@@ -82,7 +82,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
     FloatingActionButton btnDownload;
 
     private AdView adView;
-
+    View contentView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,11 +147,20 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
 
     @Override
     protected View createContentView() {
-        @SuppressLint("InflateParams")
-        View contentView = getLayoutInflater().inflate(R.layout.activity_main_drawer_layout, null);
+
+        contentView = getLayoutInflater().inflate(R.layout.activity_main_drawer_layout, null);
         ViewGroup drawerContent = contentView.findViewById(R.id.drawer_content_container);
         drawerContent.addView(wrapSlidingMusicPanel(R.layout.activity_main_content));
+        adView = contentView.findViewById(R.id.ad_view);
+        if (getResources().getString(R.string.ADS_VISIBILITY).equals("YES")) {
+            adview();
+        }else{
+            adView.setVisibility(View.GONE);
+        }
 
+        return contentView;
+    }
+    public void adview(){
         // Initialize the Mobile Ads SDK.
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
@@ -168,14 +177,13 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
 
         // Gets the ad view defined in layout/ad_fragment.xml with ad unit ID set in
         // values/strings.xml.
-        adView = contentView.findViewById(R.id.ad_view);
+
 
         // Create an ad request.
         AdRequest adRequest = new AdRequest.Builder().build();
 
         // Start loading the ad in the background.
         adView.loadAd(adRequest);
-        return contentView;
     }
     /** Called when leaving the activity */
     @Override

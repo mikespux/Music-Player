@@ -135,7 +135,15 @@ public class AlbumDetailActivity extends AbsSlidingMusicPanelActivity implements
         setUpViews();
 
         getSupportLoaderManager().initLoader(LOADER_ID, getIntent().getExtras(), this);
+        adView = findViewById(R.id.ad_view);
 
+        if (getResources().getString(R.string.ADS_VISIBILITY).equals("YES")) {
+            adview();
+        }else{
+            adView.setVisibility(View.GONE);
+        }
+    }
+    public void adview(){
         // Initialize the Mobile Ads SDK.
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
@@ -152,7 +160,7 @@ public class AlbumDetailActivity extends AbsSlidingMusicPanelActivity implements
 
         // Gets the ad view defined in layout/ad_fragment.xml with ad unit ID set in
         // values/strings.xml.
-        adView = findViewById(R.id.ad_view);
+
 
         // Create an ad request.
         AdRequest adRequest = new AdRequest.Builder().build();
@@ -160,7 +168,6 @@ public class AlbumDetailActivity extends AbsSlidingMusicPanelActivity implements
         // Start loading the ad in the background.
         adView.loadAd(adRequest);
     }
-
     @Override
     protected View createContentView() {
         return wrapSlidingMusicPanel(R.layout.activity_album_detail);

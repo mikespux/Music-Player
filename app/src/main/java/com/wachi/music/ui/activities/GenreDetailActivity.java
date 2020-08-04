@@ -81,7 +81,14 @@ public class GenreDetailActivity extends AbsSlidingMusicPanelActivity implements
         setUpToolBar();
 
         getSupportLoaderManager().initLoader(LOADER_ID, null, this);
-
+        adView = findViewById(R.id.ad_view);
+        if (getResources().getString(R.string.ADS_VISIBILITY).equals("YES")) {
+            adview();
+        }else{
+            adView.setVisibility(View.GONE);
+        }
+    }
+    public void adview(){
         // Initialize the Mobile Ads SDK.
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override

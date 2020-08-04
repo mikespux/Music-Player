@@ -152,7 +152,15 @@ public class ArtistDetailActivity extends AbsSlidingMusicPanelActivity implement
         setUpViews();
 
         getSupportLoaderManager().initLoader(LOADER_ID, getIntent().getExtras(), this);
+        adView = findViewById(R.id.ad_view);
 
+        if (getResources().getString(R.string.ADS_VISIBILITY).equals("YES")) {
+            adview();
+        }else{
+            adView.setVisibility(View.GONE);
+        }
+    }
+    public void adview(){
         // Initialize the Mobile Ads SDK.
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
@@ -177,7 +185,6 @@ public class ArtistDetailActivity extends AbsSlidingMusicPanelActivity implement
         // Start loading the ad in the background.
         adView.loadAd(adRequest);
     }
-
     @Override
     protected View createContentView() {
         return wrapSlidingMusicPanel(R.layout.activity_artist_detail);

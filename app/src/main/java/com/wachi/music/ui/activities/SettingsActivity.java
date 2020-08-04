@@ -72,7 +72,14 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
             SettingsFragment frag = (SettingsFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);
             if (frag != null) frag.invalidateSettings();
         }
-
+        adView = findViewById(R.id.ad_view);
+        if (getResources().getString(R.string.ADS_VISIBILITY).equals("YES")) {
+            adview();
+        }else{
+            adView.setVisibility(View.GONE);
+        }
+    }
+    public void adview(){
         // Initialize the Mobile Ads SDK.
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
@@ -89,7 +96,7 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
 
         // Gets the ad view defined in layout/ad_fragment.xml with ad unit ID set in
         // values/strings.xml.
-        adView = findViewById(R.id.ad_view);
+
 
         // Create an ad request.
         AdRequest adRequest = new AdRequest.Builder().build();
