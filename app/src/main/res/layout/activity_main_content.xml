@@ -27,6 +27,14 @@
         >
 
     </FrameLayout>
+        <LinearLayout
+            android:id="@+id/banner_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="vertical"
+            ads:layout_constraintBottom_toBottomOf="parent"
+            />
         <com.google.android.gms.ads.AdView
             android:id="@+id/ad_view"
             android:layout_width="match_parent"
@@ -34,6 +42,7 @@
             android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"
             ads:adSize="BANNER"
-            ads:adUnitId="@string/banner_ad_unit_id" />
+            ads:adUnitId="@string/banner_ad_unit_id"
+            android:visibility="gone"/>
     </LinearLayout>
 </LinearLayout>

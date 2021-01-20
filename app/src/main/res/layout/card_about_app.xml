@@ -51,7 +51,7 @@
             android:paddingLeft="16dp"
             android:paddingRight="16dp">
 
-            <com.wachi.music.views.IconImageView
+            <com.wachi.musicplayer.views.IconImageView
                 android:id="@+id/icon_info"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -96,7 +96,7 @@
             android:paddingLeft="16dp"
             android:paddingRight="16dp">
 
-            <com.wachi.music.views.IconImageView
+            <com.wachi.musicplayer.views.IconImageView
                 android:id="@+id/icon_intro"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -128,7 +128,7 @@
             android:paddingRight="16dp"
             android:visibility="gone">
 
-            <com.wachi.music.views.IconImageView
+            <com.wachi.musicplayer.views.IconImageView
                 android:id="@+id/icon_github"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -161,7 +161,7 @@
             android:visibility="gone">
 
 
-            <com.wachi.music.views.IconImageView
+            <com.wachi.musicplayer.views.IconImageView
                 android:id="@+id/icon_licenses"
                 android:layout_width="24dp"
                 android:layout_height="24dp"

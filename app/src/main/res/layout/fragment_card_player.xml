@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <com.wachi.music.views.WidthFitSquareLayout
+                <com.wachi.musicplayer.views.WidthFitSquareLayout
                     android:id="@+id/album_cover_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -42,15 +42,15 @@
 
                     <fragment
                         android:id="@+id/player_album_cover_fragment"
-                        class="com.wachi.music.ui.fragments.player.PlayerAlbumCoverFragment"
+                        class="com.wachi.musicplayer.ui.fragments.player.PlayerAlbumCoverFragment"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 
-                </com.wachi.music.views.WidthFitSquareLayout>
+                </com.wachi.musicplayer.views.WidthFitSquareLayout>
 
                 <fragment
                     android:id="@+id/playback_controls_fragment"
-                    class="com.wachi.music.ui.fragments.player.card.CardPlayerPlaybackControlsFragment"
+                    class="com.wachi.musicplayer.ui.fragments.player.card.CardPlayerPlaybackControlsFragment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/album_cover_container" />
@@ -69,7 +69,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <com.wachi.music.views.StatusBarView
+                    <com.wachi.musicplayer.views.StatusBarView
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/status_bar_padding" />
 
@@ -85,7 +85,7 @@
 
         </FrameLayout>
 
-        <com.wachi.music.views.StatusBarMarginFrameLayout
+        <com.wachi.musicplayer.views.StatusBarMarginFrameLayout
             android:id="@+id/player_panel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -151,7 +151,7 @@
 
             </androidx.cardview.widget.CardView>
 
-        </com.wachi.music.views.StatusBarMarginFrameLayout>
+        </com.wachi.musicplayer.views.StatusBarMarginFrameLayout>
 
     </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 

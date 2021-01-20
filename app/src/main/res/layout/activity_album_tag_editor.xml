@@ -17,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <com.wachi.music.views.WidthFitSquareLayout
+            <com.wachi.musicplayer.views.WidthFitSquareLayout
                 android:id="@+id/image_container"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -31,7 +31,7 @@
                     android:transitionName="@string/transition_album_art"
                     tools:ignore="ContentDescription,UnusedAttribute" />
 
-            </com.wachi.music.views.WidthFitSquareLayout>
+            </com.wachi.musicplayer.views.WidthFitSquareLayout>
 
             <LinearLayout
                 android:id="@+id/header"

@@ -39,7 +39,7 @@
             android:paddingLeft="16dp"
             android:paddingRight="16dp" >
 
-            <com.wachi.music.views.IconImageView
+            <com.wachi.musicplayer.views.IconImageView
                 android:id="@+id/icon_author"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
@@ -83,7 +83,7 @@
             android:paddingLeft="16dp"
             android:paddingRight="16dp">
 
-            <com.wachi.music.views.IconImageView
+            <com.wachi.musicplayer.views.IconImageView
                 android:id="@+id/icon_email"
                 android:layout_width="24dp"
                 android:layout_height="24dp"

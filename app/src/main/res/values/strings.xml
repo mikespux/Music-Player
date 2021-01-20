@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
-   <!--  <string name="ad_unit_id">ca-app-pub-1728811331988249~8214877961</string>
-  <string name="banner_ad_unit_id">ca-app-pub-1728811331988249/5972930809</string>-->
-  <string name="ADS_VISIBILITY" translatable="false">NO</string>
- <string name="ad_unit_id">ca-app-pub-3940256099942544~3347511713</string>
- <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+
+<string name="ADS_VISIBILITY" translatable="false">YES</string>
+<string name="ad_unit_id">ca-app-pub-3940256099942544~3347511713</string>
+<string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+   <!--FACEBOOK ADS-->
+<string name="fbbanner_unit_id">IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID</string>
+<string name="fbinterstitial_unit_id">VID_HD_16_9_46S_APP_INSTALL#YOUR_PLACEMENT_ID</string>
+
+<!--GOOGLE ADMOB-->
+<!--<string name="ad_unit_id">ca-app-pub-1728811331988249~4837281173</string>-->
+<!--<string name="banner_ad_unit_id">ca-app-pub-1728811331988249/8292178552</string>-->
 
    <string name="accent_color">Accent color</string>
    <string name="accent_color_desc">The accent theme color</string>

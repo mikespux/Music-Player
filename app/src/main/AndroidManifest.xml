@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.wachi.music">
+    package="com.wachi.musicplayer">
 
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -17,7 +17,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
-        android:name=".App"
+        android:name="com.wachi.musicplayer.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_music"
         android:label="@string/app_name"
@@ -31,7 +31,7 @@
             android:value="@string/ad_unit_id"/>
 
         <activity
-            android:name=".ui.activities.MainActivity"
+            android:name="com.wachi.musicplayer.ui.activities.MainActivity"
             android:label="@string/main_activity_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -103,40 +103,40 @@
                 <data android:mimeType="vnd.android.cursor.dir/audio" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activities.AlbumDetailActivity" />
-        <activity android:name=".ui.activities.ArtistDetailActivity" />
-        <activity android:name=".ui.activities.GenreDetailActivity" />
-        <activity android:name=".ui.activities.PlaylistDetailActivity" />
+        <activity android:name="com.wachi.musicplayer.ui.activities.AlbumDetailActivity" />
+        <activity android:name="com.wachi.musicplayer.ui.activities.ArtistDetailActivity" />
+        <activity android:name="com.wachi.musicplayer.ui.activities.GenreDetailActivity" />
+        <activity android:name="com.wachi.musicplayer.ui.activities.PlaylistDetailActivity" />
         <activity
-            android:name=".ui.activities.tageditor.SongTagEditorActivity"
+            android:name="com.wachi.musicplayer.ui.activities.tageditor.SongTagEditorActivity"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".ui.activities.tageditor.AlbumTagEditorActivity"
+            android:name="com.wachi.musicplayer.ui.activities.tageditor.AlbumTagEditorActivity"
             android:windowSoftInputMode="adjustResize" />
-        <activity android:name=".ui.activities.SearchActivity" />
+        <activity android:name="com.wachi.musicplayer.ui.activities.SearchActivity" />
         <activity
-            android:name=".ui.activities.SettingsActivity"
+            android:name="com.wachi.musicplayer.ui.activities.SettingsActivity"
             android:label="@string/action_settings" />
         <activity
-            android:name=".ui.activities.AboutActivity"
+            android:name="com.wachi.musicplayer.ui.activities.AboutActivity"
             android:label="@string/action_about" />
         <activity
-            android:name=".ui.activities.Mp3Activity"
+            android:name="com.wachi.musicplayer.ui.activities.Mp3Activity"
             android:label="@string/action_about" />
         <activity
-            android:name=".ui.activities.intro.AppIntroActivity"
+            android:name="com.wachi.musicplayer.ui.activities.intro.AppIntroActivity"
             android:label="@string/intro_label"
             android:theme="@style/Theme.Intro" />
         <activity
-            android:name=".appshortcuts.AppShortcutLauncherActivity"
+            android:name="com.wachi.musicplayer.appshortcuts.AppShortcutLauncherActivity"
             android:launchMode="singleInstance"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
         <service
-            android:name=".service.MusicService"
+            android:name="com.wachi.musicplayer.service.MusicService"
             android:enabled="true" />
 
-        <receiver android:name=".service.MediaButtonIntentReceiver">
+        <receiver android:name="com.wachi.musicplayer.service.MediaButtonIntentReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
@@ -149,21 +149,21 @@
             android:name="com.lge.support.SPLIT_WINDOW"
             android:value="true" />
         <meta-data
-            android:name="com.wachi.music.glide.MusicGlideModule"
+            android:name="com.wachi.musicplayer.glide.MusicGlideModule"
             android:value="GlideModule" />
         <meta-data
             android:name="com.bumptech.glide.integration.okhttp3.OkHttpGlideModule"
             android:value="GlideModule" />
 
         <!-- Widgets -->
-        <receiver android:name=".appwidgets.BootReceiver">
+        <receiver android:name="com.wachi.musicplayer.appwidgets.BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".appwidgets.AppWidgetBig"
+            android:name="com.wachi.musicplayer.appwidgets.AppWidgetBig"
             android:exported="false"
             android:label="@string/app_widget_big_name">
             <intent-filter>
@@ -175,7 +175,7 @@
                 android:resource="@xml/app_widget_big_info" />
         </receiver>
         <receiver
-            android:name=".appwidgets.AppWidgetClassic"
+            android:name="com.wachi.musicplayer.appwidgets.AppWidgetClassic"
             android:exported="false"
             android:label="@string/app_widget_classic_name">
             <intent-filter>
@@ -187,7 +187,7 @@
                 android:resource="@xml/app_widget_classic_info" />
         </receiver>
         <receiver
-            android:name=".appwidgets.AppWidgetClassicDark"
+            android:name="com.wachi.musicplayer.appwidgets.AppWidgetClassicDark"
             android:exported="false"
             android:label="@string/app_widget_classic_dark_name">
             <intent-filter>
@@ -199,7 +199,7 @@
                 android:resource="@xml/app_widget_classic_dark_info" />
         </receiver>
         <receiver
-            android:name=".appwidgets.AppWidgetSmall"
+            android:name="com.wachi.musicplayer.appwidgets.AppWidgetSmall"
             android:exported="false"
             android:label="@string/app_widget_small_name">
             <intent-filter>
@@ -211,7 +211,7 @@
                 android:resource="@xml/app_widget_small_info" />
         </receiver>
         <receiver
-            android:name=".appwidgets.AppWidgetSmallDark"
+            android:name="com.wachi.musicplayer.appwidgets.AppWidgetSmallDark"
             android:exported="false"
             android:label="@string/app_widget_small_dark_name">
             <intent-filter>
@@ -223,7 +223,7 @@
                 android:resource="@xml/app_widget_small_dark_info" />
         </receiver>
         <receiver
-            android:name=".appwidgets.AppWidgetCard"
+            android:name="com.wachi.musicplayer.appwidgets.AppWidgetCard"
             android:exported="false"
             android:label="@string/app_widget_card_name">
             <intent-filter>
@@ -235,7 +235,7 @@
                 android:resource="@xml/app_widget_card_info" />
         </receiver>
         <receiver
-            android:name=".appwidgets.AppWidgetCardDark"
+            android:name="com.wachi.musicplayer.appwidgets.AppWidgetCardDark"
             android:exported="false"
             android:label="@string/app_widget_card_dark_name">
             <intent-filter>
