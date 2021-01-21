@@ -1,9 +1,13 @@
 package com.wachi.musicplayer.ui.activities;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -25,10 +29,22 @@ import com.facebook.ads.AdError;
 import com.facebook.ads.AdListener;
 import com.facebook.ads.AdSize;
 import com.facebook.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.kabouzeid.appthemehelper.ThemeStore;
 import com.kabouzeid.appthemehelper.common.prefs.supportv7.ATEColorPreference;
 import com.kabouzeid.appthemehelper.common.prefs.supportv7.ATEPreferenceFragmentCompat;
 import com.kabouzeid.appthemehelper.util.ColorUtil;
+import com.mopub.common.MoPub;
+import com.mopub.common.SdkConfiguration;
+import com.mopub.common.SdkInitializationListener;
+import com.mopub.common.logging.MoPubLog;
+import com.wachi.musicplayer.BuildConfig;
 import com.wachi.musicplayer.R;
 import com.wachi.musicplayer.appshortcuts.DynamicShortcutManager;
 import com.wachi.musicplayer.misc.NonProAllowedColors;
@@ -46,11 +62,25 @@ import java.util.Arrays;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class SettingsActivity extends AbsBaseActivity implements ColorChooserDialog.ColorCallback {
+import static com.mopub.common.logging.MoPubLog.LogLevel.INFO;
 
+public class SettingsActivity extends AbsBaseActivity implements ColorChooserDialog.ColorCallback {
+    public static final String TAG = SettingsActivity.class.getSimpleName();
     @BindView(R.id.toolbar)
     Toolbar toolbar;
     private AdView adView;
+
+    SharedPreferences prefs;
+    Boolean purchased;
+    boolean connected = false;
+    public static final String PURCHASE_KEY= "purchase";
+    private FirebaseRemoteConfig mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+    FirebaseRemoteConfigSettings configSettings;
+    // cache expiration in seconds
+    long cacheExpiration = 3600;
+
+    String app_unit_id="",banner_ad_unit_id="",native_ad_unit_id="",interstitial_ad_unit_id="";
+    String fbbanner_unit_id="",fbinterstitial_unit_id="",fbnative_unit_id="",mopub_banner_unit_id="",mopub_interstitial_unit_id="";
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,17 +104,125 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
             SettingsFragment frag = (SettingsFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);
             if (frag != null) frag.invalidateSettings();
         }
-      //  adView = findViewById(R.id.ad_view);
-        if (getResources().getString(R.string.ADS_VISIBILITY).equals("YES")) {
-            fbAdview();
-        }else{
-            //adView.setVisibility(View.GONE);
+        prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        purchased=prefs.getBoolean(PURCHASE_KEY,false);
+
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(InitializationStatus initializationStatus) {}
+        });
+
+        configSettings = new FirebaseRemoteConfigSettings.Builder()
+                .setMinimumFetchIntervalInSeconds(cacheExpiration)
+                .build();
+
+        if(isOnline()) {
+            if (getResources().getString(R.string.ADS_VISIBILITY).equals("NO")) {
+
+                mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
+                mFirebaseRemoteConfig.setDefaultsAsync(R.xml.remote_config_defaults);
+
+                banner_ad_unit_id = mFirebaseRemoteConfig.getString("banner_ad_unit_id");
+                native_ad_unit_id = mFirebaseRemoteConfig.getString("native_ad_unit_id");
+                interstitial_ad_unit_id = mFirebaseRemoteConfig.getString("interstitial_ad_unit_id");
+                fbbanner_unit_id = mFirebaseRemoteConfig.getString("fbbanner_unit_id");
+                fbinterstitial_unit_id = mFirebaseRemoteConfig.getString("fbinterstitial_unit_id");
+                fbnative_unit_id = mFirebaseRemoteConfig.getString("fbnative_unit_id");
+                mopub_banner_unit_id = mFirebaseRemoteConfig.getString("mopub_banner_unit_id");
+                mopub_interstitial_unit_id = mFirebaseRemoteConfig.getString("mopub_interstitial_unit_id");
+
+                if (!purchased) {
+                    fbAdview();
+                }else{
+                    adView.setVisibility(View.GONE);
+                }
+            }
+            else {
+
+                mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
+                mFirebaseRemoteConfig.setDefaultsAsync(R.xml.remote_config_defaults);
+                mFirebaseRemoteConfig.fetchAndActivate()
+                        .addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Boolean> task) {
+                                if (task.isSuccessful()) {
+                                    boolean updated = task.getResult();
+                                    Log.d(TAG, "Config params updated: " + updated);
+                                    Log.i(TAG, "Fetch and activate succeeded");
+                                    //Toast.makeText(InAppBillingActivity.this, "Fetch and activate succeeded",Toast.LENGTH_SHORT).show();
+
+                                    banner_ad_unit_id = mFirebaseRemoteConfig.getString("banner_ad_unit_id");
+                                    native_ad_unit_id = mFirebaseRemoteConfig.getString("native_ad_unit_id");
+                                    interstitial_ad_unit_id = mFirebaseRemoteConfig.getString("interstitial_ad_unit_id");
+                                    fbbanner_unit_id = mFirebaseRemoteConfig.getString("fbbanner_unit_id");
+                                    fbinterstitial_unit_id = mFirebaseRemoteConfig.getString("fbinterstitial_unit_id");
+                                    fbnative_unit_id = mFirebaseRemoteConfig.getString("fbnative_unit_id");
+                                    mopub_banner_unit_id = mFirebaseRemoteConfig.getString("mopub_banner_unit_id");
+                                    mopub_interstitial_unit_id = mFirebaseRemoteConfig.getString("mopub_interstitial_unit_id");
+
+                                    SharedPreferences.Editor edit = prefs.edit();
+                                    edit.putString("interstitial_ad_unit_id", interstitial_ad_unit_id);
+                                    edit.commit();
+
+                                    edit.putString("fbinterstitial_unit_id", fbinterstitial_unit_id);
+                                    edit.commit();
+
+                                    edit.putString("fbnative_unit_id", fbnative_unit_id);
+                                    edit.commit();
+
+
+                                } else {
+                                    //Toast.makeText(InAppBillingActivity.this, "Fetch failed",Toast.LENGTH_SHORT).show();
+                                    Log.i(TAG, "Fetch failed");
+                                }
+                                //Toast.makeText(InAppBillingActivity.this, Interstitial_unit_id,Toast.LENGTH_SHORT).show();
+
+                                Log.i(TAG, "app_unit_id " + app_unit_id);
+                                Log.i(TAG, "banner_ad_unit_id " + banner_ad_unit_id);
+                                Log.i(TAG, "native_ad_unit_id " + native_ad_unit_id);
+                                Log.i(TAG, "interstitial_ad_unit_id " + interstitial_ad_unit_id);
+                                Log.i(TAG, "fbbanner_unit_id " + fbbanner_unit_id);
+                                Log.i(TAG, "fbinterstitial_unit_id " + fbinterstitial_unit_id);
+                                Log.i(TAG, "fbnative_unit_id " + fbnative_unit_id);
+                                Log.i(TAG, "mopub_banner_unit_id " + mopub_banner_unit_id);
+                                Log.i(TAG, "mopub_interstitial_unit_id " + mopub_interstitial_unit_id);
+
+
+
+
+                                if (!purchased) {
+                                    fbAdview();
+                                }else{
+                                    adView.setVisibility(View.GONE);
+                                }
+
+                            }
+                        });
+            }
         }
+    }
+    public boolean isOnline() {
+        try {
+            ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext()
+                    .getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            connected = networkInfo != null && networkInfo.isAvailable() &&
+                    networkInfo.isConnected();
+            return connected;
+
+
+        } catch (Exception e) {
+            System.out.println("CheckConnectivity Exception: " + e.getMessage());
+            Log.v("connectivity", e.toString());
+        }
+        return connected;
     }
     public  void fbAdview(){
 
-       // adView = new com.facebook.ads.AdView(this, "IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID", AdSize.BANNER_HEIGHT_50);
-        adView = new AdView(this, getResources().getString(R.string.fbbanner_unit_id), AdSize.BANNER_HEIGHT_50);
+        adView = new AdView(this, fbbanner_unit_id, AdSize.BANNER_HEIGHT_50);
+
+
         // Find the Ad Container
         LinearLayout adContainer = findViewById(R.id.banner_container);
 
@@ -98,7 +236,7 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
             @Override
             public void onError(Ad ad, AdError adError) {
                 // Ad error callback
-               // Toast.makeText(SettingsActivity.this,"Error: " + adError.getErrorMessage(),Toast.LENGTH_LONG).show();
+                // Toast.makeText(MainActivity.this,"Error: " + adError.getErrorMessage(),Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -120,37 +258,11 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
         // Request an ad
         adView.loadAd(adView.buildLoadAdConfig().withAdListener(adListener).build());
     }
-//    public void adview(){
-//        // Initialize the Mobile Ads SDK.
-//        MobileAds.initialize(this, new OnInitializationCompleteListener() {
-//            @Override
-//            public void onInitializationComplete(InitializationStatus initializationStatus) {}
-//        });
-//
-//        // Set your test devices. Check your logcat output for the hashed device ID to
-//        // get test ads on a physical device. e.g.
-//        // "Use RequestConfiguration.Builder().setTestDeviceIds(Arrays.asList("ABCDEF012345"))
-//        // to get test ads on this device."
-//        MobileAds.setRequestConfiguration(
-//                new RequestConfiguration.Builder().setTestDeviceIds(Arrays.asList("ABCDEF012345"))
-//                        .build());
-//
-//        // Gets the ad view defined in layout/ad_fragment.xml with ad unit ID set in
-//        // values/strings.xml.
-//
-//
-//        // Create an ad request.
-//        AdRequest adRequest = new AdRequest.Builder().build();
-//
-//        // Start loading the ad in the background.
-//        adView.loadAd(adRequest);
-//    }
+
     /** Called when leaving the activity */
     @Override
     public void onPause() {
-//        if (adView != null) {
-//            adView.pause();
-//        }
+
         super.onPause();
     }
 
@@ -158,9 +270,7 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
     @Override
     public void onResume() {
         super.onResume();
-//        if (adView != null) {
-//            adView.resume();
-//        }
+
     }
 
     /** Called before the activity is destroyed */

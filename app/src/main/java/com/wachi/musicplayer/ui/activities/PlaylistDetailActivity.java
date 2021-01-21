@@ -74,7 +74,7 @@ public class PlaylistDetailActivity extends AbsSlidingMusicPanelActivity impleme
 
     private RecyclerView.Adapter wrappedAdapter;
     private RecyclerViewDragDropManager recyclerViewDragDropManager;
-    private AdView adView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,38 +92,9 @@ public class PlaylistDetailActivity extends AbsSlidingMusicPanelActivity impleme
         setUpToolbar();
 
         getSupportLoaderManager().initLoader(LOADER_ID, null, this);
-        adView = findViewById(R.id.ad_view);
-        if (getResources().getString(R.string.ADS_VISIBILITY).equals("YES")) {
-            adview();
-        }else{
-            adView.setVisibility(View.GONE);
-        }
+
     }
-public void adview(){
-    // Initialize the Mobile Ads SDK.
-    MobileAds.initialize(this, new OnInitializationCompleteListener() {
-        @Override
-        public void onInitializationComplete(InitializationStatus initializationStatus) {}
-    });
 
-    // Set your test devices. Check your logcat output for the hashed device ID to
-    // get test ads on a physical device. e.g.
-    // "Use RequestConfiguration.Builder().setTestDeviceIds(Arrays.asList("ABCDEF012345"))
-    // to get test ads on this device."
-    MobileAds.setRequestConfiguration(
-            new RequestConfiguration.Builder().setTestDeviceIds(Arrays.asList("ABCDEF012345"))
-                    .build());
-
-    // Gets the ad view defined in layout/ad_fragment.xml with ad unit ID set in
-    // values/strings.xml.
-
-
-    // Create an ad request.
-    AdRequest adRequest = new AdRequest.Builder().build();
-
-    // Start loading the ad in the background.
-    adView.loadAd(adRequest);
-}
     @Override
     protected View createContentView() {
         return wrapSlidingMusicPanel(R.layout.activity_playlist_detail);
@@ -251,9 +222,7 @@ public void adview(){
             recyclerViewDragDropManager.cancelDrag();
         }
 
-        if (adView != null) {
-            adView.pause();
-        }
+
         super.onPause();
     }
 
@@ -275,9 +244,7 @@ public void adview(){
             wrappedAdapter = null;
         }
         adapter = null;
-        if (adView != null) {
-            adView.destroy();
-        }
+
         super.onDestroy();
     }
 
@@ -285,9 +252,7 @@ public void adview(){
     @Override
     public void onResume() {
         super.onResume();
-        if (adView != null) {
-            adView.resume();
-        }
+
     }
 
 

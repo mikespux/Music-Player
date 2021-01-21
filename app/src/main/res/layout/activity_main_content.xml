@@ -15,6 +15,10 @@
         <include layout="@layout/status_bar" />
 
     </FrameLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -27,6 +31,16 @@
         >
 
     </FrameLayout>
+        <TextView
+            android:id="@+id/back_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:text="@string/back_again"
+            android:visibility="gone"
+            />
         <LinearLayout
             android:id="@+id/banner_container"
             android:layout_width="match_parent"
@@ -35,14 +49,49 @@
             android:orientation="vertical"
             ads:layout_constraintBottom_toBottomOf="parent"
             />
-        <com.google.android.gms.ads.AdView
-            android:id="@+id/ad_view"
+
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/admob_adplaceholder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_alignParentBottom="true"
+        android:padding="12dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <include
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_alignParentBottom="true"
-            ads:adSize="BANNER"
-            ads:adUnitId="@string/banner_ad_unit_id"
-            android:visibility="gone"/>
+            layout="@layout/ad_unified"/>
+
     </LinearLayout>
+    <LinearLayout
+        android:id="@+id/fb_adplaceholder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_alignParentBottom="true"
+        android:padding="12dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <include layout="@layout/ad_fb_unified"
+                android:id="@+id/native_ad_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:paddingBottom="5dp"/>
+
+        </ScrollView>
+
+
+    </LinearLayout>
+    </RelativeLayout>
 </LinearLayout>

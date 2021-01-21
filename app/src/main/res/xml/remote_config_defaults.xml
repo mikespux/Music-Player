@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- START xml_defaults -->
+<defaultsMap>
+    <entry>
+        <key>banner_ad_unit_id</key>
+        <value>ca-app-pub-3940256099942544/6300978111</value>
+    </entry>
+    <entry>
+        <key>native_ad_unit_id</key>
+        <value>ca-app-pub-3940256099942544/2247696110</value>
+    </entry>
+    <entry>
+        <key>interstitial_ad_unit_id</key>
+        <value>ca-app-pub-3940256099942544/1033173712</value>
+    </entry>
+    <entry>
+        <key>fbbanner_unit_id</key>
+        <value>IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID</value>
+    </entry>
+    <entry>
+        <key>fbinterstitial_unit_id</key>
+        <value>VID_HD_16_9_46S_APP_INSTALL#YOUR_PLACEMENT_ID</value>
+    </entry>
+    <entry>
+        <key>fbnative_unit_id</key>
+        <value>VID_HD_9_16_39S_APP_INSTALL#YOUR_PLACEMENT_ID</value>
+    </entry>
+    <entry>
+        <key>mopub_banner_unit_id</key>
+        <value>b195f8dd8ded45fe847ad89ed1d016da</value>
+    </entry>
+    <entry>
+        <key>mopub_interstitial_unit_id</key>
+        <value>24534e1901884e398f1253216226017e</value>
+    </entry>
+</defaultsMap>
+<!-- END xml_defaults -->

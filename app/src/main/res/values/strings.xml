@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+   <string name="back_again">Please click BACK again to exit</string>
+
+   <string name="ad_attribution">Ad</string>
+   <string name="ADS_VISIBILITY" translatable="false">YES</string>
 
 
-<string name="ADS_VISIBILITY" translatable="false">YES</string>
-<string name="ad_unit_id">ca-app-pub-3940256099942544~3347511713</string>
-<string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
-   <!--FACEBOOK ADS-->
-<string name="fbbanner_unit_id">IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID</string>
-<string name="fbinterstitial_unit_id">VID_HD_16_9_46S_APP_INSTALL#YOUR_PLACEMENT_ID</string>
-
-<!--GOOGLE ADMOB-->
-<!--<string name="ad_unit_id">ca-app-pub-1728811331988249~4837281173</string>-->
-<!--<string name="banner_ad_unit_id">ca-app-pub-1728811331988249/8292178552</string>-->
 
    <string name="accent_color">Accent color</string>
    <string name="accent_color_desc">The accent theme color</string>
@@ -48,6 +42,7 @@
    <string name="action_set_as_ringtone">Set as ringtone</string>
    <string name="action_set_as_start_directory">Set as start directory</string>
    <string name="action_settings">Settings</string>
+   <string name="removeads">Remove Ads</string>
    <string name="action_rate">Rate us</string>
    <string name="action_share">Share</string>
    <string name="action_show_lyrics">Show lyrics</string>
@@ -312,4 +307,5 @@
    <string name="yandex_money">Yandex.Money</string>
    <string name="year">Year</string>
    <string name="you_have_to_select_at_least_one_category">You have to select at least one category</string>
+
 </resources>

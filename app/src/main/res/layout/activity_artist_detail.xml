@@ -189,14 +189,6 @@
             android:elevation="@dimen/toolbar_elevation"
             tools:ignore="UnusedAttribute" />
     </FrameLayout>
-        <com.google.android.gms.ads.AdView
-            android:id="@+id/ad_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_alignParentBottom="true"
-            ads:adSize="BANNER"
-            ads:adUnitId="@string/banner_ad_unit_id" />
     </LinearLayout>
 
 </LinearLayout>

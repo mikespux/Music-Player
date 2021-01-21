@@ -34,6 +34,10 @@
             android:icon="@drawable/ic_settings_white_24dp"
             android:title="@string/action_settings" />
         <item
+            android:id="@+id/nav_removeads"
+            android:icon="@drawable/ic_baseline_not_interested_24"
+            android:title="@string/removeads" />
+        <item
             android:id="@+id/nav_rate"
             android:icon="@drawable/ic_rate_review_white_24dp"
             android:title="@string/action_rate" />

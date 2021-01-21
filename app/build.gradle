@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 def getProperties(String fileName) {
     final Properties properties = new Properties()
@@ -14,18 +15,18 @@ static def getProperty(Properties properties, String name) {
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
     buildToolsVersion '29.0.3'
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 30
 
-        renderscriptTargetApi 29
+        renderscriptTargetApi 30
         vectorDrawables.useSupportLibrary = true
 
         applicationId 'com.wachi.musicplayer'
-        versionCode 111621
-        versionName '1.0.3'
+        versionCode 111624
+        versionName '1.0.6'
 
         resValue 'string', 'app_version', versionName + ' (' + versionCode + ')'
     }
@@ -49,9 +50,13 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+            resValue "string", "app_unit_id", "ca-app-pub-1728811331988249~4837281173"
+            resValue "string", "base64key", "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoIbVONizrdfqH7NpYr2Pn3pFmUQNaM35MUB1y7nY3ixmjNE81H8KpdGoGK7IqwLt6mEjn6yxwOFn5ybQf1bT+dE4OcJCX2+hL9mvjJzJGViZCnTG1JP1ESK+h+XWCfYR90YxAx2N7VV35nCqwBPdIAHrAvtoVWItvTw6f4w4LuoKaOKiuQdQfqhrFCIKVyXwb6cdbtDQhdtxl0BmmtNPx1Xc/SDivv8Y/tFEapkwJsbdXGBfTSwty+ykSdhxmnFsPyefBvS6TVhcdR10mLU1o7aUAPPJSURT8AiHYL2a3dyLJEPqDaIDKpsCtptySVQYca/ThKB5uEHAetRJZrR+MwIDAQAB"
         }
         debug {
             applicationIdSuffix '.debug'
+            resValue "string", "app_unit_id", "ca-app-pub-3940256099942544~3347511713"
+            resValue "string", "base64key", "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoIbVONizrdfqH7NpYr2Pn3pFmUQNaM35MUB1y7nY3ixmjNE81H8KpdGoGK7IqwLt6mEjn6yxwOFn5ybQf1bT+dE4OcJCX2+hL9mvjJzJGViZCnTG1JP1ESK+h+XWCfYR90YxAx2N7VV35nCqwBPdIAHrAvtoVWItvTw6f4w4LuoKaOKiuQdQfqhrFCIKVyXwb6cdbtDQhdtxl0BmmtNPx1Xc/SDivv8Y/tFEapkwJsbdXGBfTSwty+ykSdhxmnFsPyefBvS6TVhcdR10mLU1o7aUAPPJSURT8AiHYL2a3dyLJEPqDaIDKpsCtptySVQYca/ThKB5uEHAetRJZrR+MwIDAQAB"
         }
     }
     packagingOptions {
@@ -119,4 +124,13 @@ dependencies {
     //implementation 'com.facebook.android:audience-network-sdk:5.+'
     implementation 'com.facebook.android:audience-network-sdk:6.+'
     //implementation 'com.facebook.android:audience-network-sdk:5.9.1'
+
+    implementation 'com.android.billingclient:billing:3.0.2'
+
+    implementation('com.mopub:mopub-sdk:5.15.0@aar') {
+        transitive = true
+    }
+
+    implementation 'com.google.firebase:firebase-config:20.0.2'
+    implementation 'com.google.android.play:core:1.9.0'
 }

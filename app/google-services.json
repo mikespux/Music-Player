@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "70408402970",
+    "project_id": "music-player-3bd62",
+    "storage_bucket": "music-player-3bd62.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:70408402970:android:51bc4829f214115e5c79a3",
+        "android_client_info": {
+          "package_name": "com.wachi.musicplayer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "70408402970-ial0k4i7ogfdi5is361re066bceh3l79.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeCakwNMvGXtmSXNc-FzC-gIkmLZfpYe4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "70408402970-ial0k4i7ogfdi5is361re066bceh3l79.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:70408402970:android:7477a084decd18e05c79a3",
+        "android_client_info": {
+          "package_name": "com.wachi.musicplayer.debug"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "70408402970-ial0k4i7ogfdi5is361re066bceh3l79.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeCakwNMvGXtmSXNc-FzC-gIkmLZfpYe4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "70408402970-ial0k4i7ogfdi5is361re066bceh3l79.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
