@@ -40,9 +40,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
+                android:textColor="@color/md_black_1000"
                 android:gravity="center"
                 android:text="Removed Ads"
-                android:visibility="gone"/>
+                android:visibility="visible"/>
 
 
             <LinearLayout

@@ -315,8 +315,6 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                     };
                     SampleActivityUtils.addDefaultNetworkConfiguration(configBuilder);
                     MoPub.initializeSdk(this, configBuilder.build(), MopubListener);
-                }else{
-                    adView.setVisibility(View.GONE);
                 }
             }
             else {
@@ -1036,10 +1034,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
 
                 //Toast.makeText(MainActivity.this, String.valueOf(purchased),Toast.LENGTH_SHORT).show();
             }
-            else {
-                adView.setVisibility(View.GONE);
 
-            }
         }
     }
 

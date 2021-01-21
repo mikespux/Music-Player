@@ -133,8 +133,6 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
 
                 if (!purchased) {
                     fbAdview();
-                }else{
-                    adView.setVisibility(View.GONE);
                 }
             }
             else {

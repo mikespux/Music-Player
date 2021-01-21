@@ -61,6 +61,7 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
         purchaseButton= findViewById(R.id.mBuyButton);
         purchaseButton.setOnClickListener(v -> purchase(v));
 
+
         // Establish connection to billing client
         //check purchase status from google play store cache
         //to check if item already Purchased previously or refunded
@@ -91,11 +92,13 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
         //item Purchased
         if(getPurchaseValueFromPref()){
             purchaseButton.setVisibility(View.GONE);
+            purchaseStatus.setVisibility(View.VISIBLE);
             purchaseStatus.setText("Purchase Status : Purchased");
         }
         //item not Purchased
         else{
             purchaseButton.setVisibility(View.VISIBLE);
+            purchaseStatus.setVisibility(View.GONE);
             purchaseStatus.setText("Purchase Status : Not Purchased");
         }
     }
