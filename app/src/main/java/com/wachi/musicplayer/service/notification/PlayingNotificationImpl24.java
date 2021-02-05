@@ -87,7 +87,7 @@ public class PlayingNotificationImpl24 extends PlayingNotification {
                                 service.getString(R.string.action_add_to_favorites),
                                 retrievePlaybackAction(ACTION_TOGGLE_FAVORITE));
                         NotificationCompat.Builder builder = new NotificationCompat.Builder(service, NOTIFICATION_CHANNEL_ID)
-                                .setSmallIcon(R.drawable.ic_notification)
+                                .setSmallIcon(R.drawable.ic_music)
                                 .setLargeIcon(bitmap)
                                 .setContentIntent(clickIntent)
                                 .setDeleteIntent(deleteIntent)

@@ -1,9 +1,15 @@
 package com.wachi.musicplayer.ui.activities;
 
+import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -15,9 +21,13 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
@@ -27,6 +37,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
@@ -96,6 +107,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import guy4444.smartrate.SmartRate;
 
 import static com.mopub.common.logging.MoPubLog.LogLevel.INFO;
 
@@ -154,6 +166,11 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
     boolean connected = false;
     boolean doubleBackToExitPressedOnce = false;
     TextView back_info;
+
+    private static final String KEY_LAUGH_COUNT = "key_laugh_count";
+    int laughtCount;
+    int rating;
+    String feedback;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -242,7 +259,10 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         drawerContent.addView(wrapSlidingMusicPanel(R.layout.activity_main_content));
 
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
+        laughtCount = getlaughCount();
+        if(laughtCount == 5){ showRateDialog();}
+        setLaughCount(laughtCount+1);
+        //Toast.makeText(MainActivity.this, String.valueOf(laughtCount),Toast.LENGTH_SHORT).show();
         purchased=prefs.getBoolean(PURCHASE_KEY,false);
 
         back_info = contentView.findViewById(R.id.back_info);
@@ -414,7 +434,10 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         return contentView;
     }
     public void onBackPressed() {
-
+        laughtCount = getlaughCount();
+        if(laughtCount == 5){setLaughCount(laughtCount+1); showRateDialog();}
+        if(laughtCount == 10){setLaughCount(laughtCount+1); showRateDialog();}
+        if(laughtCount == 15){setLaughCount(laughtCount+1); showRateDialog();}
         if(isOnline()) {
 
             purchased = prefs.getBoolean(PURCHASE_KEY, false);
@@ -1008,6 +1031,10 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
     @Override
     public void onResume() {
         super.onResume();
+        laughtCount = getlaughCount();
+        if(laughtCount == 5){setLaughCount(laughtCount+1); showRateDialog();}
+        if(laughtCount == 10){setLaughCount(laughtCount+1); showRateDialog();}
+        if(laughtCount == 15){setLaughCount(laughtCount+1); showRateDialog();}
         if(isOnline()) {
 
             purchased=prefs.getBoolean(PURCHASE_KEY,false);
@@ -1062,6 +1089,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         }
         super.onDestroy();
     }
+
     private void setUpNavigationView() {
         int accentColor = ThemeStore.accentColor(this);
         NavigationViewUtil.setItemIconColors(navigationView, ATHUtil.resolveColor(this, R.attr.iconColor, ThemeStore.textColorSecondary(this)), accentColor);
@@ -1071,41 +1099,60 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
             drawerLayout.closeDrawers();
             switch (menuItem.getItemId()) {
                 case R.id.nav_library:
+                    laughtCount = getlaughCount();
+                    setLaughCount(laughtCount+1);
                     new Handler().postDelayed(() -> setMusicChooser(LIBRARY), 0);
                     if(isOnline()){
                         if (!purchased) {
-                            showAdmobInterstitial();
+                            if(laughtCount > 6) {
+                                showAdmobInterstitial();
+                            }
                         }
                     }
                     break;
                 case R.id.nav_folders:
+                    laughtCount = getlaughCount();
+                    setLaughCount(laughtCount+1);
                     new Handler().postDelayed(() -> setMusicChooser(FOLDERS), 0);
                     if(isOnline()){
                         if (!purchased) {
-                            showMopubInterstitial();
+                            if(laughtCount > 6) {
+                                showMopubInterstitial();
+                            }
                         }
                     }
                     break;
                 case R.id.action_scan:
+                    laughtCount = getlaughCount();
                     new Handler().postDelayed(() -> {
+                        laughtCount = getlaughCount();
+                        setLaughCount(laughtCount+1);
                         ScanMediaFolderChooserDialog dialog = ScanMediaFolderChooserDialog.create();
                         dialog.show(getSupportFragmentManager(), "SCAN_MEDIA_FOLDER_CHOOSER");
                     }, 0);
                     if(isOnline()){
                         if (!purchased) {
-                            showAdmobInterstitial();
+                            if(laughtCount > 6) {
+                                showAdmobInterstitial();
+                            }
                         }
                     }
                     break;
                 case R.id.nav_equalizer:
+                    laughtCount = getlaughCount();
+                    setLaughCount(laughtCount+1);
                     NavigationUtil.openEqualizer(this);
 
                     break;
                 case R.id.nav_settings:
+                    laughtCount = getlaughCount();
+                    setLaughCount(laughtCount+1);
                     new Handler().postDelayed(() -> startActivity(new Intent(MainActivity.this, SettingsActivity.class)), 0);
                     if(isOnline()){
                         if (!purchased) {
-                            showMopubInterstitial();
+                            if(laughtCount > 6) {
+                                showMopubInterstitial();
+                            }
                         }
                     }
                     break;
@@ -1113,7 +1160,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                     new Handler().postDelayed(() -> startActivity(new Intent(MainActivity.this, InAppBillingActivity.class)), 0);
                     break;
                 case R.id.nav_rate:
-                    rateApp();
+                    showRateDialog();
                     break;
                 case R.id.nav_about:
                     new Handler().postDelayed(() -> startActivity(new Intent(MainActivity.this, AboutActivity.class)), 0);
@@ -1122,6 +1169,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
             return true;
         });
     }
+
     public void rateApp() {
         try {
             Intent rateIntent = rateIntentForUrl("market://details");
@@ -1131,6 +1179,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
             startActivity(rateIntent);
         }
     }
+
     private Intent rateIntentForUrl(String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(String.format("%s?id=%s", url, getApplicationContext().getPackageName())));
         int flags = Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
@@ -1299,5 +1348,154 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
     public interface MainActivityFragmentCallbacks {
         boolean handleBackPress();
     }
+    public int getlaughCount() {
+        return prefs.getInt(KEY_LAUGH_COUNT ,0);
+    }
 
+    public void setLaughCount(final int i) {
+        final SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(KEY_LAUGH_COUNT, i);
+        editor.apply();
+    }
+    @SuppressLint("ResourceType")
+    public  void showRateDialog() {
+        SmartRate.Rate(MainActivity.this
+                , "Rate App"
+                , "I am a developer working very hard to give you the best free application. " +
+                        "Your 5-Star review means a lot to me. Please write a nice review in Google Play to encourage me!"
+                , "Continue"
+                , "Please take a moment and rate this app 5-stars on Google Play"
+                , "click here"
+                , "Ask me later"
+                , "Never ask again"
+                , "Cancel"
+                , "Please provide feedback."
+                , ThemeStore.primaryColor(this)
+                , 5
+                , 0
+                , 0
+                ,new SmartRate.CallBack_UserRating() {
+                    @Override
+                    public void userRating(int rate) {
+                        //	Toast.makeText(SettingsActivity.this, "Rating: " + rating + " Stars", Toast.LENGTH_LONG).show();
+                        if(rate<5){
+                            laughtCount = getlaughCount();
+                            setLaughCount(laughtCount+20);
+                            rating=rate;
+                            showFeedbackDialog();
+
+                        }
+                        //saveUserRating(rating);
+                    }
+                }
+        );
+
+
+    }
+    @SuppressLint("ResourceType")
+    private void showFeedbackDialog() {
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
+        dialog.getContext().setTheme(ThemeStore.primaryColor(this));
+        dialog.setContentView(R.layout.dialog_feedback);
+        dialog.setCancelable(false);
+
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
+        final TextView txt_rating=dialog.findViewById(R.id.txt_rating);
+        txt_rating.setText("Your Rating "+rating+" Stars");
+        final EditText edt_feedback=dialog.findViewById(R.id.txt_feedback);
+        edt_feedback.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                v.getParent().requestDisallowInterceptTouchEvent(true);
+                switch (event.getAction() & MotionEvent.ACTION_MASK){
+                    case MotionEvent.ACTION_UP:
+                        v.getParent().requestDisallowInterceptTouchEvent(false);
+                        break;
+                }
+                return false;
+            }
+        });
+
+        dialog.findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                feedback=edt_feedback.getText().toString();
+                if(feedback.length()==0){
+                    edt_feedback.setError("Please write feedback");
+                    Toast.makeText(MainActivity.this, "Please write feedback!", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                requestFeature();
+                dialog.dismiss();
+            }
+        });
+        dialog.findViewById(R.id.btn_exit).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+        dialog.getWindow().setAttributes(lp);
+    }
+    private void requestFeature() {
+        try {
+            Intent email = new Intent(Intent.ACTION_SENDTO);
+            email.setData(Uri.parse("mailto:"));
+            final PackageManager pm = this.getPackageManager();
+            final List<ResolveInfo> matches = pm.queryIntentActivities(email, 0);
+            String className = null;
+            for (final ResolveInfo info : matches) {
+                if (info.activityInfo.packageName.equals("com.google.android.gm")) {
+                    className = info.activityInfo.name;
+
+                    if(className != null && !className.isEmpty()){
+                        break;
+                    }
+                }
+            }
+            //Explicitly only use Gmail to send
+            email.setClassName("com.google.android.gm",className);
+            email.setType("plain/text");
+            email.putExtra(Intent.EXTRA_EMAIL, new String[]{"michaelnyagwachi@gmail.com"});
+            email.putExtra(Intent.EXTRA_SUBJECT,
+                    "[" + getResources().getString(R.string.app_name)
+                            + "] " + getAppVersion(getApplicationContext())
+                            + " - " + getResources().getString(R.string.request)
+            );
+            email.putExtra(Intent.EXTRA_TEXT, feedback);
+
+            startActivity(email);
+        } catch (android.content.ActivityNotFoundException ex) {
+            Intent email = new Intent(Intent.ACTION_SEND);
+            email.setType("message/rfc822");
+            email.putExtra(Intent.EXTRA_EMAIL, new String[]{"michaelnyagwachi@gmail.com"});
+            email.putExtra(Intent.EXTRA_SUBJECT,
+                    "[" + getResources().getString(R.string.app_name)
+                            + "] " + getAppVersion(getApplicationContext())
+                            + " - " + getResources().getString(R.string.request));
+            email.putExtra(Intent.EXTRA_TEXT, feedback);
+            Intent chooser = Intent.createChooser(email, getResources().getString(R.string.send_email));
+            chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(email);
+
+        }
+    }
+
+    public static String getAppVersion(Context context) {
+        String versionName;
+        try {
+            PackageInfo info = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            versionName = info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            versionName = "N/A";
+        }
+        return versionName;
+    }
 }

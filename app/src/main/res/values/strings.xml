@@ -3,10 +3,13 @@
    <string name="back_again">Please click BACK again to exit</string>
 
    <string name="ad_attribution">Ad</string>
-   <string name="ADS_VISIBILITY" translatable="false">YES</string>
-
-
-
+   <string name="feedback"  translatable="false">Thank You</string>
+   <string name="feedback_hint"  translatable="false">I value your feedback...\n\nI would be very happy if you could spend 30 seconds to write a short feedback message about how to improve.</string>
+   <string name="rate_app">Rate app</string>
+   <string name="btn_feedback">Give Feedback</string>
+   <string name="btn_cancel">Cancel</string>
+   <string name="send_email">Send by email&#8230;</string>
+   <string name="request">Request or feedback</string>
    <string name="accent_color">Accent color</string>
    <string name="accent_color_desc">The accent theme color</string>
    <string name="action_about">About</string>

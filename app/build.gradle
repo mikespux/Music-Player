@@ -25,8 +25,8 @@ android {
         vectorDrawables.useSupportLibrary = true
 
         applicationId 'com.wachi.musicplayer'
-        versionCode 111625
-        versionName '1.0.7'
+        versionCode 111626
+        versionName '1.0.8'
 
         resValue 'string', 'app_version', versionName + ' (' + versionCode + ')'
     }
@@ -50,11 +50,13 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+            resValue "string", "ADS_VISIBILITY", "YES"
             resValue "string", "app_unit_id", "ca-app-pub-1728811331988249~4837281173"
             resValue "string", "base64key", "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoIbVONizrdfqH7NpYr2Pn3pFmUQNaM35MUB1y7nY3ixmjNE81H8KpdGoGK7IqwLt6mEjn6yxwOFn5ybQf1bT+dE4OcJCX2+hL9mvjJzJGViZCnTG1JP1ESK+h+XWCfYR90YxAx2N7VV35nCqwBPdIAHrAvtoVWItvTw6f4w4LuoKaOKiuQdQfqhrFCIKVyXwb6cdbtDQhdtxl0BmmtNPx1Xc/SDivv8Y/tFEapkwJsbdXGBfTSwty+ykSdhxmnFsPyefBvS6TVhcdR10mLU1o7aUAPPJSURT8AiHYL2a3dyLJEPqDaIDKpsCtptySVQYca/ThKB5uEHAetRJZrR+MwIDAQAB"
         }
         debug {
             applicationIdSuffix '.debug'
+            resValue "string", "ADS_VISIBILITY", "NO"
             resValue "string", "app_unit_id", "ca-app-pub-3940256099942544~3347511713"
             resValue "string", "base64key", "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoIbVONizrdfqH7NpYr2Pn3pFmUQNaM35MUB1y7nY3ixmjNE81H8KpdGoGK7IqwLt6mEjn6yxwOFn5ybQf1bT+dE4OcJCX2+hL9mvjJzJGViZCnTG1JP1ESK+h+XWCfYR90YxAx2N7VV35nCqwBPdIAHrAvtoVWItvTw6f4w4LuoKaOKiuQdQfqhrFCIKVyXwb6cdbtDQhdtxl0BmmtNPx1Xc/SDivv8Y/tFEapkwJsbdXGBfTSwty+ykSdhxmnFsPyefBvS6TVhcdR10mLU1o7aUAPPJSURT8AiHYL2a3dyLJEPqDaIDKpsCtptySVQYca/ThKB5uEHAetRJZrR+MwIDAQAB"
         }
@@ -80,17 +82,17 @@ android {
 
 dependencies {
     implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'androidx.core:core:1.2.0'
-    implementation 'androidx.fragment:fragment:1.2.4'
-    implementation 'androidx.media:media:1.1.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.core:core:1.3.2'
+    implementation 'androidx.fragment:fragment:1.2.5'
+    implementation 'androidx.media:media:1.2.1'
     implementation 'androidx.palette:palette:1.0.0'
     implementation 'androidx.percentlayout:percentlayout:1.0.0'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'com.google.android.material:material:1.1.0'
+    implementation 'com.google.android.material:material:1.3.0'
 
     implementation 'com.afollestad:material-cab:0.1.12'
     implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
@@ -118,7 +120,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:okhttp3-integration:1.5.0'
 
     implementation 'com.github.AdrienPoupa:jaudiotagger:2.2.3'
-    implementation 'com.google.android.gms:play-services-ads:19.1.0'
+    implementation 'com.google.android.gms:play-services-ads:19.7.0'
     implementation 'com.android.volley:volley:1.1.0'
 
     //implementation 'com.facebook.android:audience-network-sdk:5.+'
@@ -131,6 +133,6 @@ dependencies {
         transitive = true
     }
 
-    implementation 'com.google.firebase:firebase-config:20.0.2'
-    implementation 'com.google.android.play:core:1.9.0'
+    implementation 'com.google.firebase:firebase-config:20.0.3'
+    implementation 'com.github.guy-4444:SmartRateUsDialog-Android:1.00.08'
 }
