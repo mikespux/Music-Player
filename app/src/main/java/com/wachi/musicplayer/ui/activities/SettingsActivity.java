@@ -2,7 +2,6 @@ package com.wachi.musicplayer.ui.activities;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -11,7 +10,6 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -40,11 +38,6 @@ import com.kabouzeid.appthemehelper.ThemeStore;
 import com.kabouzeid.appthemehelper.common.prefs.supportv7.ATEColorPreference;
 import com.kabouzeid.appthemehelper.common.prefs.supportv7.ATEPreferenceFragmentCompat;
 import com.kabouzeid.appthemehelper.util.ColorUtil;
-import com.mopub.common.MoPub;
-import com.mopub.common.SdkConfiguration;
-import com.mopub.common.SdkInitializationListener;
-import com.mopub.common.logging.MoPubLog;
-import com.wachi.musicplayer.BuildConfig;
 import com.wachi.musicplayer.R;
 import com.wachi.musicplayer.appshortcuts.DynamicShortcutManager;
 import com.wachi.musicplayer.misc.NonProAllowedColors;
@@ -62,7 +55,6 @@ import java.util.Arrays;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import static com.mopub.common.logging.MoPubLog.LogLevel.INFO;
 
 public class SettingsActivity extends AbsBaseActivity implements ColorChooserDialog.ColorCallback {
     public static final String TAG = SettingsActivity.class.getSimpleName();
@@ -283,17 +275,17 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
     public void onColorSelection(@NonNull ColorChooserDialog dialog, @ColorInt int selectedColor) {
         switch (dialog.getTitle()) {
             case R.string.primary_color:
-                    Arrays.sort(NonProAllowedColors.PRIMARY_COLORS);
-                    if (Arrays.binarySearch(NonProAllowedColors.PRIMARY_COLORS, selectedColor) < 0) {
+                Arrays.sort(NonProAllowedColors.PRIMARY_COLORS);
+                if (Arrays.binarySearch(NonProAllowedColors.PRIMARY_COLORS, selectedColor) < 0) {
                 }
                 ThemeStore.editTheme(this)
                         .primaryColor(selectedColor)
                         .commit();
                 break;
             case R.string.accent_color:
-                    Arrays.sort(NonProAllowedColors.ACCENT_COLORS);
-                    if (Arrays.binarySearch(NonProAllowedColors.ACCENT_COLORS, selectedColor) < 0) {
-                    }
+                Arrays.sort(NonProAllowedColors.ACCENT_COLORS);
+                if (Arrays.binarySearch(NonProAllowedColors.ACCENT_COLORS, selectedColor) < 0) {
+                }
                 ThemeStore.editTheme(this)
                         .accentColor(selectedColor)
                         .commit();
@@ -412,8 +404,7 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
             });
 
             final ATEColorPreference primaryColorPref = (ATEColorPreference) findPreference("primary_color");
-             //final int primaryColor = ThemeStore.primaryColor(getActivity());
-             final int primaryColor = Color.parseColor("#000000");
+            final int primaryColor = ThemeStore.primaryColor(getActivity());
             primaryColorPref.setColor(primaryColor, ColorUtil.darkenColor(primaryColor));
             primaryColorPref.setOnPreferenceClickListener(preference -> {
                 new ColorChooserDialog.Builder(getActivity(), R.string.primary_color)
@@ -426,8 +417,7 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
             });
 
             final ATEColorPreference accentColorPref = (ATEColorPreference) findPreference("accent_color");
-          //  final int accentColor = ThemeStore.accentColor(getActivity());
-            final int accentColor = Color.parseColor("#FF6500");
+            final int accentColor = ThemeStore.accentColor(getActivity());
             accentColorPref.setColor(accentColor, ColorUtil.darkenColor(accentColor));
             accentColorPref.setOnPreferenceClickListener(preference -> {
                 new ColorChooserDialog.Builder(getActivity(), R.string.accent_color)
@@ -495,6 +485,7 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
 
             updateNowPlayingScreenSummary();
         }
+
 
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {

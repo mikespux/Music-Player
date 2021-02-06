@@ -1,14 +1,23 @@
 package com.wachi.musicplayer.ui.activities;
 
+import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +30,8 @@ import com.kabouzeid.appthemehelper.ThemeStore;
 import com.wachi.musicplayer.R;
 import com.wachi.musicplayer.ui.activities.base.AbsBaseActivity;
 import com.wachi.musicplayer.ui.activities.intro.AppIntroActivity;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -54,7 +65,7 @@ public class AboutActivity extends AbsBaseActivity implements View.OnClickListen
     Button dollarButton;
     @BindView(R.id.yandex_money)
     LinearLayout yandexMoney;
-
+    String feedback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,11 +128,12 @@ public class AboutActivity extends AbsBaseActivity implements View.OnClickListen
         } else if (v == forkOnGitHub) {
             openUrl(GITHUB);
         } else if (v == writeAnEmail) {
-            Intent intent = new Intent(Intent.ACTION_SENDTO);
-            intent.setData(Uri.parse("mailto:michaelnyagwachi@gmail.com"));
-            intent.putExtra(Intent.EXTRA_EMAIL, "michaelnyagwachi@gmail.com");
-            intent.putExtra(Intent.EXTRA_SUBJECT, "Music");
-            startActivity(Intent.createChooser(intent, "E-Mail"));
+//            Intent intent = new Intent(Intent.ACTION_SENDTO);
+//            intent.setData(Uri.parse("mailto:michaelnyagwachi@gmail.com"));
+//            intent.putExtra(Intent.EXTRA_EMAIL, "michaelnyagwachi@gmail.com");
+//            intent.putExtra(Intent.EXTRA_SUBJECT, "Music");
+//            startActivity(Intent.createChooser(intent, "E-Mail"));
+            showFeedbackDialog();
         } else if (v == webMoney) {
             openUrl(Paypal);
         } else if (v == rubleButton) {
@@ -138,7 +150,116 @@ public class AboutActivity extends AbsBaseActivity implements View.OnClickListen
             openUrl(YandexMoney);
         }
     }
+    @SuppressLint("ResourceType")
+    private void showFeedbackDialog() {
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
+        dialog.getContext().setTheme(ThemeStore.primaryColor(this));
+        dialog.setContentView(R.layout.dialog_feedback);
+        dialog.setCancelable(false);
 
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(dialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
+        final TextView txt_title=dialog.findViewById(R.id.txt_title);
+        final TextView txt_rating=dialog.findViewById(R.id.txt_rating);
+
+            txt_title.setText("Feedback");
+            txt_rating.setText("Write Your Feedback");
+
+        final EditText edt_feedback=dialog.findViewById(R.id.txt_feedback);
+        edt_feedback.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                v.getParent().requestDisallowInterceptTouchEvent(true);
+                switch (event.getAction() & MotionEvent.ACTION_MASK){
+                    case MotionEvent.ACTION_UP:
+                        v.getParent().requestDisallowInterceptTouchEvent(false);
+                        break;
+                }
+                return false;
+            }
+        });
+
+        dialog.findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                feedback=edt_feedback.getText().toString();
+                if(feedback.length()==0){
+                    edt_feedback.setError("Please write feedback!");
+                    Toast.makeText(AboutActivity.this, "Please write feedback!", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                requestFeature();
+                dialog.dismiss();
+            }
+        });
+        dialog.findViewById(R.id.btn_exit).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+        dialog.getWindow().setAttributes(lp);
+    }
+    private void requestFeature() {
+        try {
+            Intent email = new Intent(Intent.ACTION_SENDTO);
+            email.setData(Uri.parse("mailto:"));
+            final PackageManager pm = this.getPackageManager();
+            final List<ResolveInfo> matches = pm.queryIntentActivities(email, 0);
+            String className = null;
+            for (final ResolveInfo info : matches) {
+                if (info.activityInfo.packageName.equals("com.google.android.gm")) {
+                    className = info.activityInfo.name;
+
+                    if(className != null && !className.isEmpty()){
+                        break;
+                    }
+                }
+            }
+            //Explicitly only use Gmail to send
+            email.setClassName("com.google.android.gm",className);
+            email.setType("plain/text");
+            email.putExtra(Intent.EXTRA_EMAIL, new String[]{"michaelnyagwachi@gmail.com"});
+            email.putExtra(Intent.EXTRA_SUBJECT,
+                    "[" + getResources().getString(R.string.app_name)
+                            + "] " + getAppVersion(getApplicationContext())
+                            + " - " + getResources().getString(R.string.request)
+            );
+            email.putExtra(Intent.EXTRA_TEXT, feedback);
+
+            startActivity(email);
+        } catch (android.content.ActivityNotFoundException ex) {
+            Intent email = new Intent(Intent.ACTION_SEND);
+            email.setType("message/rfc822");
+            email.putExtra(Intent.EXTRA_EMAIL, new String[]{"michaelnyagwachi@gmail.com"});
+            email.putExtra(Intent.EXTRA_SUBJECT,
+                    "[" + getResources().getString(R.string.app_name)
+                            + "] " + getAppVersion(getApplicationContext())
+                            + " - " + getResources().getString(R.string.request));
+            email.putExtra(Intent.EXTRA_TEXT, feedback);
+            Intent chooser = Intent.createChooser(email, getResources().getString(R.string.send_email));
+            chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(email);
+
+        }
+    }
+
+    public static String getAppVersion(Context context) {
+        String versionName;
+        try {
+            PackageInfo info = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            versionName = info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            versionName = "N/A";
+        }
+        return versionName;
+    }
     private void openUrl(String url) {
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setData(Uri.parse(url));

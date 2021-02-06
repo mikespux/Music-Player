@@ -25,8 +25,8 @@ android {
         vectorDrawables.useSupportLibrary = true
 
         applicationId 'com.wachi.musicplayer'
-        versionCode 111626
-        versionName '1.0.8'
+        versionCode 111627
+        versionName '1.0.9'
 
         resValue 'string', 'app_version', versionName + ' (' + versionCode + ')'
     }

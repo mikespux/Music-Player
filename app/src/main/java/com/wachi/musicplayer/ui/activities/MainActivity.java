@@ -72,6 +72,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.kabouzeid.appthemehelper.ThemeStore;
+import com.kabouzeid.appthemehelper.common.prefs.supportv7.ATEPreferenceFragmentCompat;
 import com.kabouzeid.appthemehelper.util.ATHUtil;
 import com.kabouzeid.appthemehelper.util.NavigationViewUtil;
 import com.mopub.common.MoPub;
@@ -257,7 +258,6 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         contentView = getLayoutInflater().inflate(R.layout.activity_main_drawer_layout, null);
         ViewGroup drawerContent = contentView.findViewById(R.id.drawer_content_container);
         drawerContent.addView(wrapSlidingMusicPanel(R.layout.activity_main_content));
-
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         laughtCount = getlaughCount();
         if(laughtCount == 5){ showRateDialog();}

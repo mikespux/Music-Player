@@ -12,24 +12,22 @@
         android:orientation="vertical">
 
         <TextView
-            style="@style/TextAppearance.DialogTitle"
             android:id="@+id/txt_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:gravity="center"
             android:text="@string/feedback"
-            android:textColor="@color/md_black_1000"
+            android:textSize="22sp"
             />
         <TextView
-            style="@style/Text.NormalLabel"
             android:id="@+id/txt_rating"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:gravity="center"
             android:text="@string/rate_app"
-            android:textColor="@color/md_black_1000"
+            android:textSize="20sp"
             />
     </LinearLayout>
 

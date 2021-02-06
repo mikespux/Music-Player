@@ -13,7 +13,7 @@
         <item name="dividerColor">@color/md_divider_white</item>
         <item name="iconColor">@color/ate_secondary_text_dark</item>
         <item name="toolbarPopupTheme">@style/ThemeOverlay.AppCompat</item>
-        <item name="android:textColor">@color/white</item>
+        <item name="android:textColor">@color/md_white_1000</item>
         <!-- just in case-->
         <item name="colorAccent">@android:color/white</item>
         <!-- necessary to find the overflow button later in the layout-->
@@ -33,7 +33,7 @@
         <item name="dividerColor">@color/md_divider_black</item>
         <item name="iconColor">@color/ate_secondary_text_light</item>
         <item name="toolbarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
-        <item name="android:textColor">@color/white</item>
+        <item name="android:textColor">@color/md_grey_800</item>
         <!-- just in case-->
         <item name="colorAccent">@android:color/white</item>
         <!-- necessary to find the overflow button later in the layout-->
