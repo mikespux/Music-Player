@@ -15,14 +15,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.afollestad.materialcab.MaterialCab;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.RequestConfiguration;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils;
 import com.kabouzeid.appthemehelper.ThemeStore;
+import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 import com.wachi.musicplayer.R;
 import com.wachi.musicplayer.adapter.song.SongAdapter;
 import com.wachi.musicplayer.helper.MusicPlayerRemote;
@@ -35,10 +30,8 @@ import com.wachi.musicplayer.model.Song;
 import com.wachi.musicplayer.ui.activities.base.AbsSlidingMusicPanelActivity;
 import com.wachi.musicplayer.util.MusicColorUtil;
 import com.wachi.musicplayer.util.ViewUtil;
-import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import butterknife.BindView;
@@ -81,23 +74,7 @@ public class GenreDetailActivity extends AbsSlidingMusicPanelActivity implements
         setUpToolBar();
 
         getSupportLoaderManager().initLoader(LOADER_ID, null, this);
-
     }
-
-    /** Called when leaving the activity */
-    @Override
-    public void onPause() {
-
-        super.onPause();
-    }
-
-    /** Called when returning to the activity */
-    @Override
-    public void onResume() {
-        super.onResume();
-
-    }
-
 
     @Override
     protected View createContentView() {
@@ -122,7 +99,7 @@ public class GenreDetailActivity extends AbsSlidingMusicPanelActivity implements
 
     private void setUpToolBar() {
         toolbar.setBackgroundColor(ThemeStore.primaryColor(this));
-        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearace);
+        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearance);
         setSupportActionBar(toolbar);
         //noinspection ConstantConditions
         getSupportActionBar().setTitle(genre.name);
@@ -153,6 +130,7 @@ public class GenreDetailActivity extends AbsSlidingMusicPanelActivity implements
     @Override
     public MaterialCab openCab(final int menu, final MaterialCab.Callback callback) {
         if (cab != null && cab.isActive()) cab.finish();
+        adapter.setColor(ThemeStore.primaryColor(this));
         cab = new MaterialCab(this, R.id.cab_stub)
                 .setMenu(menu)
                 .setCloseDrawableRes(R.drawable.ic_close_white_24dp)

@@ -2,6 +2,11 @@
     android:enterFadeDuration="@android:integer/config_shortAnimTime"
     android:exitFadeDuration="@android:integer/config_shortAnimTime">
 
-    <item android:state_checked="true" android:drawable="@drawable/item_rounded_right" />
-    <item android:drawable="@android:color/transparent"/>
+    <item
+        android:state_checked="true"
+        android:drawable="@drawable/item_rounded_right" />
+    <item
+        android:drawable="@drawable/item_rounded_right"
+        android:state_pressed="true" />
+    <item android:drawable="@android:color/transparent" />
 </animated-selector>

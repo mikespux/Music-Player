@@ -1,5 +1,6 @@
 package com.wachi.musicplayer.ui.activities.base;
 
+import android.app.Activity;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -25,38 +26,47 @@ public abstract class AbsThemeActivity extends ATHToolbarActivity {
         MaterialDialogsUtil.updateMaterialDialogsThemeSingleton(this);
     }
 
-    protected void setDrawUnderStatusbar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            Util.setAllowDrawUnderStatusBar(getWindow());
-        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-            Util.setStatusBarTranslucent(getWindow());
-    }
-
     /**
-     * This will set the color of the view with the id "status_bar" on KitKat and Lollipop.
+     * This will set the color of the view with the id "status_bar" on Lollipop.
      * On Lollipop if no such view is found it will set the statusbar color using the native method.
      *
      * @param color the new statusbar color (will be shifted down on Lollipop and above)
      */
-    public void setStatusbarColor(int color) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            final View statusBar = getWindow().getDecorView().getRootView().findViewById(R.id.status_bar);
-            if (statusBar != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    statusBar.setBackgroundColor(ColorUtil.darkenColor(color));
-                    setLightStatusbarAuto(color);
-                } else {
-                    statusBar.setBackgroundColor(color);
-                }
-            } else if (Build.VERSION.SDK_INT >= 21) {
-                getWindow().setStatusBarColor(ColorUtil.darkenColor(color));
-                setLightStatusbarAuto(color);
+    public static final void Static_setStatusbarColor(final Activity pActivity, int color) {
+        final View statusBar = pActivity.getWindow().getDecorView().getRootView().findViewById(R.id.status_bar);
+        if (statusBar != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                statusBar.setBackgroundColor(color);
+                ATH.setLightStatusbar(pActivity, ColorUtil.isColorLight(color));
+            } else {
+                statusBar.setBackgroundColor(color);
             }
+        } else if (Build.VERSION.SDK_INT >= 21) {
+            pActivity.getWindow().setStatusBarColor(ColorUtil.darkenColor(color));
+            ATH.setLightStatusbar(pActivity, ColorUtil.isColorLight(color));
+        }
+    }
+
+    protected void setDrawUnderStatusbar() {
+        Util.setAllowDrawUnderStatusBar(getWindow());
+    }
+
+    public void setStatusbarColor(int color) {
+        final View statusBar = getWindow().getDecorView().getRootView().findViewById(R.id.status_bar);
+        if (statusBar != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                statusBar.setBackgroundColor(color);
+                setLightStatusbarAuto(color);
+            } else {
+                statusBar.setBackgroundColor(color);
+            }
+        } else if (Build.VERSION.SDK_INT >= 21) {
+            getWindow().setStatusBarColor(ColorUtil.darkenColor(color));
+            setLightStatusbarAuto(color);
         }
     }
 
     public void setStatusbarColorAuto() {
-        // we don't want to use statusbar color because we are doing the color darkening on our own to support KitKat
         setStatusbarColor(ThemeStore.primaryColor(this));
     }
 

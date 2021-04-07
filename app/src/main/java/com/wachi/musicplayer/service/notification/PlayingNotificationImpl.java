@@ -28,8 +28,8 @@ import com.wachi.musicplayer.model.Song;
 import com.wachi.musicplayer.service.MusicService;
 import com.wachi.musicplayer.ui.activities.MainActivity;
 import com.wachi.musicplayer.util.ImageUtil;
-import com.wachi.musicplayer.util.MusicUtil;
 import com.wachi.musicplayer.util.MusicColorUtil;
+import com.wachi.musicplayer.util.MusicUtil;
 import com.wachi.musicplayer.util.PreferenceUtil;
 
 public class PlayingNotificationImpl extends PlayingNotification {
@@ -74,7 +74,7 @@ public class PlayingNotificationImpl extends PlayingNotification {
         final PendingIntent deleteIntent = buildPendingIntent(service, MusicService.ACTION_QUIT, null);
 
         final Notification notification = new NotificationCompat.Builder(service, NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_music)
+                .setSmallIcon(R.drawable.ic_notification)
                 .setContentIntent(clickIntent)
                 .setDeleteIntent(deleteIntent)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)

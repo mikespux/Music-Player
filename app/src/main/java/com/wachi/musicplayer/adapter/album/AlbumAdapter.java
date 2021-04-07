@@ -13,8 +13,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.util.Pair;
 
 import com.bumptech.glide.Glide;
+import com.kabouzeid.appthemehelper.ThemeStore;
 import com.kabouzeid.appthemehelper.util.ColorUtil;
 import com.kabouzeid.appthemehelper.util.MaterialValueHelper;
+import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 import com.wachi.musicplayer.R;
 import com.wachi.musicplayer.adapter.base.AbsMultiSelectAdapter;
 import com.wachi.musicplayer.adapter.base.MediaEntryViewHolder;
@@ -28,7 +30,6 @@ import com.wachi.musicplayer.model.Song;
 import com.wachi.musicplayer.util.MusicUtil;
 import com.wachi.musicplayer.util.NavigationUtil;
 import com.wachi.musicplayer.util.PreferenceUtil;
-import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -228,6 +229,7 @@ public class AlbumAdapter extends AbsMultiSelectAdapter<AlbumAdapter.ViewHolder,
 
         @Override
         public boolean onLongClick(View view) {
+            setColor(ThemeStore.primaryColor(activity));
             toggleChecked(getAdapterPosition());
             return true;
         }

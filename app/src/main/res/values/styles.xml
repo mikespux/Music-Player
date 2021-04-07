@@ -27,7 +27,7 @@
         <item name="android:thumbOffset">0dp</item>
     </style>
 
-    <style name="ProductSansTextAppearace">
+    <style name="ProductSansTextAppearance">
         <item name="android:fontFamily">@font/product_sans</item>
         <item name="android:textSize">20sp</item>
     </style>
@@ -65,29 +65,14 @@
         <item name="android:height">15dp</item>
     </style>
 
-    <style name="TextAppearance.DialogTitle" parent="@android:style/TextAppearance.Material.Title">
-        <item name="android:textSize">22sp</item>
-        <item name="android:gravity">start</item>
+    <style name="NavigationViewStyle">
+        <item name="itemBackground">@drawable/drawer_item_selected</item>
+        <item name="android:colorControlHighlight">@android:color/transparent</item>
     </style>
 
-    <style name="TextAppearance.DialogContent" parent="@android:style/TextAppearance.Material.Body1">
-        <item name="android:textSize">16sp</item>
-        <item name="android:textColor">?android:textColorSecondary</item>
-        <item name="android:gravity">start</item>
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
-    <style name="Text">
-        <item name="android:textColor">@color/md_white_1000</item>
-        <item name="android:fontFamily">sans-serif-light</item>
-    </style>
-
-    <style name="Text.NormalLabel" parent="Text">
-        <item name="android:textSize">20sp</item>
-    </style>
-
-    <style name="Text.SectionLabel">
-        <item name="android:textColor">@color/md_black_1000</item>
-        <item name="android:fontFamily">sans-serif-light</item>
-        <item name="android:textSize">24sp</item>
-    </style>
 </resources>

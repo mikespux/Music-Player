@@ -24,6 +24,8 @@ import com.wachi.musicplayer.helper.menu.SongMenuHelper;
 import com.wachi.musicplayer.helper.menu.SongsMenuHelper;
 import com.wachi.musicplayer.interfaces.CabHolder;
 import com.wachi.musicplayer.model.Song;
+import com.wachi.musicplayer.ui.activities.base.AbsThemeActivity;
+import com.wachi.musicplayer.util.MusicColorUtil;
 import com.wachi.musicplayer.util.NavigationUtil;
 
 import java.util.ArrayList;
@@ -34,7 +36,9 @@ public class ArtistSongAdapter extends ArrayAdapter<Song> implements MaterialCab
     private final CabHolder cabHolder;
     private MaterialCab cab;
     private List<Song> dataSet;
-    private List<Song> checked;
+    private final List<Song> checked;
+
+    private int color;
 
     @NonNull
     private final AppCompatActivity activity;
@@ -167,8 +171,13 @@ public class ArtistSongAdapter extends ArrayAdapter<Song> implements MaterialCab
         return cab != null && cab.isActive();
     }
 
+    public void setColor(int color) {
+        this.color = color;
+    }
+
     @Override
     public boolean onCabCreated(MaterialCab materialCab, Menu menu) {
+        AbsThemeActivity.Static_setStatusbarColor(activity, MusicColorUtil.shiftBackgroundColorForLightText(color));
         return true;
     }
 
@@ -182,6 +191,7 @@ public class ArtistSongAdapter extends ArrayAdapter<Song> implements MaterialCab
 
     @Override
     public boolean onCabFinished(MaterialCab materialCab) {
+        AbsThemeActivity.Static_setStatusbarColor(activity, color);
         unCheckAll();
         return true;
     }

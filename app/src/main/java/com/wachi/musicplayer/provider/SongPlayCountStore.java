@@ -36,31 +36,31 @@ public class SongPlayCountStore extends SQLiteOpenHelper {
     private static SongPlayCountStore sInstance = null;
 
     public static final String DATABASE_NAME = "song_play_count.db";
-    private static final int VERSION = 2;
+    private static final int VERSION = 3;
 
     // interpolator curve applied for measuring the curve
     @NonNull
-    private static Interpolator sInterpolator = new AccelerateInterpolator(1.5f);
+    private static final Interpolator sInterpolator = new AccelerateInterpolator(1.5f);
 
     // how many weeks worth of playback to song
     private static final int NUM_WEEKS = 52;
 
     // how high to multiply the interpolation curve
     @SuppressWarnings("FieldCanBeLocal")
-    private static int INTERPOLATOR_HEIGHT = 50;
+    private static final int INTERPOLATOR_HEIGHT = 50;
 
     // how high the base value is. The ratio of the Height to Base is what really matters
     @SuppressWarnings("FieldCanBeLocal")
-    private static int INTERPOLATOR_BASE = 25;
+    private static final int INTERPOLATOR_BASE = 25;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private static int ONE_WEEK_IN_MS = 1000 * 60 * 60 * 24 * 7;
+    private static final int ONE_WEEK_IN_MS = 1000 * 60 * 60 * 24 * 7;
 
     @NonNull
-    private static String WHERE_ID_EQUALS = SongPlayCountColumns.ID + "=?";
+    private static final String WHERE_ID_EQUALS = SongPlayCountColumns.ID + "=?";
 
     // number of weeks since epoch time
-    private int mNumberOfWeeksSinceEpoch;
+    private final int mNumberOfWeeksSinceEpoch;
 
     // used to song if we've walked through the db and updated all the rows
     private boolean mDatabaseUpdated;
@@ -74,30 +74,15 @@ public class SongPlayCountStore extends SQLiteOpenHelper {
         mDatabaseUpdated = false;
     }
 
-    @Override
-    public void onCreate(@NonNull final SQLiteDatabase db) {
-        // create the play count table
-        // WARNING: If you change the order of these columns
-        // please update getColumnIndexForWeek
-        StringBuilder builder = new StringBuilder();
-        builder.append("CREATE TABLE IF NOT EXISTS ");
-        builder.append(SongPlayCountColumns.NAME);
-        builder.append("(");
-        builder.append(SongPlayCountColumns.ID);
-        builder.append(" INT UNIQUE,");
-
-        for (int i = 0; i < NUM_WEEKS; i++) {
-            builder.append(getColumnNameForWeek(i));
-            builder.append(" INT DEFAULT 0,");
-        }
-
-        builder.append(SongPlayCountColumns.LAST_UPDATED_WEEK_INDEX);
-        builder.append(" INT NOT NULL,");
-
-        builder.append(SongPlayCountColumns.PLAY_COUNT_SCORE);
-        builder.append(" REAL DEFAULT 0);");
-
-        db.execSQL(builder.toString());
+    /**
+     * Gets the column name for each week #
+     *
+     * @param week number
+     * @return the column name
+     */
+    @NonNull
+    private static String getColumnNameForWeek(final int week) {
+        return SongPlayCountColumns.WEEK_PLAY_COUNT + week;
     }
 
     @Override
@@ -360,15 +345,30 @@ public class SongPlayCountStore extends SQLiteOpenHelper {
         return score;
     }
 
-    /**
-     * Gets the column name for each week #
-     *
-     * @param week number
-     * @return the column name
-     */
-    @NonNull
-    private static String getColumnNameForWeek(final int week) {
-        return SongPlayCountColumns.WEEK_PLAY_COUNT + String.valueOf(week);
+    @Override
+    public void onCreate(@NonNull final SQLiteDatabase db) {
+        // create the play count table
+        // WARNING: If you change the order of these columns
+        // please update getColumnIndexForWeek
+        StringBuilder builder = new StringBuilder();
+        builder.append("CREATE TABLE IF NOT EXISTS ");
+        builder.append(SongPlayCountColumns.NAME);
+        builder.append("(");
+        builder.append(SongPlayCountColumns.ID);
+        builder.append(" LONG UNIQUE,");
+
+        for (int i = 0; i < NUM_WEEKS; i++) {
+            builder.append(getColumnNameForWeek(i));
+            builder.append(" INT DEFAULT 0,");
+        }
+
+        builder.append(SongPlayCountColumns.LAST_UPDATED_WEEK_INDEX);
+        builder.append(" INT NOT NULL,");
+
+        builder.append(SongPlayCountColumns.PLAY_COUNT_SCORE);
+        builder.append(" REAL DEFAULT 0);");
+
+        db.execSQL(builder.toString());
     }
 
     /**

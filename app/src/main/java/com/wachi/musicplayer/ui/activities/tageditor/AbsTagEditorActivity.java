@@ -73,7 +73,7 @@ public abstract class AbsTagEditorActivity extends AbsBaseActivity {
     ImageView image;
     @BindView(R.id.header)
     LinearLayout header;
-    private int id;
+    private long id;
     private int headerVariableSpace;
     private int paletteColorPrimary;
     private boolean isInNoImageMode;
@@ -112,7 +112,7 @@ public abstract class AbsTagEditorActivity extends AbsBaseActivity {
         setUpViews();
 
         setSupportActionBar(toolbar);
-        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearace);
+        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearance);
         //noinspection ConstantConditions
         getSupportActionBar().setTitle(null);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -185,7 +185,7 @@ public abstract class AbsTagEditorActivity extends AbsBaseActivity {
     private void getIntentExtras() {
         Bundle intentExtras = getIntent().getExtras();
         if (intentExtras != null) {
-            id = intentExtras.getInt(EXTRA_ID);
+            id = intentExtras.getLong(EXTRA_ID);
         }
     }
 
@@ -265,6 +265,10 @@ public abstract class AbsTagEditorActivity extends AbsBaseActivity {
         Util.hideSoftKeyboard(this);
 
         new WriteTagsAsyncTask(this).execute(new WriteTagsAsyncTask.LoadingInfo(getSongPaths(), fieldKeyValueMap, artworkInfo));
+    }
+
+    protected long getId() {
+        return id;
     }
 
     private static class WriteTagsAsyncTask extends DialogAsyncTask<WriteTagsAsyncTask.LoadingInfo, Integer, String[]> {
@@ -382,7 +386,7 @@ public abstract class AbsTagEditorActivity extends AbsBaseActivity {
             @Nullable
             public final Map<FieldKey, String> fieldKeyValueMap;
             @Nullable
-            private ArtworkInfo artworkInfo;
+            private final ArtworkInfo artworkInfo;
 
             private LoadingInfo(Collection<String> filePaths, @Nullable Map<FieldKey, String> fieldKeyValueMap, @Nullable ArtworkInfo artworkInfo) {
                 this.filePaths = filePaths;
@@ -393,17 +397,13 @@ public abstract class AbsTagEditorActivity extends AbsBaseActivity {
     }
 
     public static class ArtworkInfo {
-        public final int albumId;
+        public final long albumId;
         public final Bitmap artwork;
 
-        public ArtworkInfo(int albumId, Bitmap artwork) {
+        public ArtworkInfo(long albumId, Bitmap artwork) {
             this.albumId = albumId;
             this.artwork = artwork;
         }
-    }
-
-    protected int getId() {
-        return id;
     }
 
     @Override

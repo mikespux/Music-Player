@@ -26,35 +26,35 @@
             android:layout_height="?android:attr/actionBarSize" />
 
     </FrameLayout>
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1">
-
-        <com.github.ksoichiro.android.observablescrollview.ObservableListView
-            android:id="@+id/list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:divider="@null"
-            android:dividerHeight="0dp"
-            android:scrollbars="none" />
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-            <LinearLayout
-                android:id="@+id/header"
+            <com.github.ksoichiro.android.observablescrollview.ObservableListView
+                android:id="@+id/list"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/detail_header_height"
-                android:background="?attr/defaultFooterColor"
-                android:elevation="@dimen/toolbar_elevation"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:divider="@null"
+                android:dividerHeight="0dp"
+                android:scrollbars="none" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/header"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/detail_header_height"
+                    android:background="?attr/defaultFooterColor"
+                    android:elevation="@dimen/toolbar_elevation"
                 android:orientation="horizontal"
                 tools:ignore="UnusedAttribute">
 
@@ -172,23 +172,30 @@
 
         </FrameLayout>
 
-        <ImageView
-            android:id="@+id/image"
-            android:layout_width="@dimen/detail_header_image_height"
-            android:layout_height="@dimen/detail_header_image_height"
-            android:layout_margin="16dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/default_artist_image"
-            android:transitionName="@string/transition_artist_image"
-            tools:ignore="ContentDescription,UnusedAttribute" />
+            <ImageView
+                android:id="@+id/image"
+                android:layout_width="@dimen/detail_header_image_height"
+                android:layout_height="@dimen/detail_header_image_height"
+                android:layout_margin="16dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/default_artist_image"
+                android:transitionName="@string/transition_artist_image"
+                tools:ignore="ContentDescription,UnusedAttribute" />
 
-        <View
-            android:id="@+id/header_overlay"
+            <View
+                android:id="@+id/header_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/detail_header_height"
+                android:elevation="@dimen/toolbar_elevation"
+                tools:ignore="UnusedAttribute" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/banner_container"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/detail_header_height"
-            android:elevation="@dimen/toolbar_elevation"
-            tools:ignore="UnusedAttribute" />
-    </FrameLayout>
-    </LinearLayout>
-
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="vertical"
+            ads:layout_constraintBottom_toBottomOf="parent" />
+    </RelativeLayout>
 </LinearLayout>

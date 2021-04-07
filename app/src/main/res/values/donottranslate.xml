@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="developer" translatable="false">Michael N.</string>
-
+    <string name="company" translatable="false">Wachi Apps</string>
     <string name="paypal" translatable="false">Paypal</string>
-
+    <string name="ad_attribution" translatable="false">Ad</string>
+    <string name="removeads">Remove Ads</string>
+    <string name="action_rate">Rate us</string>
     <string name="ym_account" translatable="false">4100 1537 2205 898</string>
 
     <string name="ruble_sign" translatable="false">₽</string>

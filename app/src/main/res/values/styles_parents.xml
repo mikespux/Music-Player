@@ -35,10 +35,19 @@
         <item name="toolbarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
         <item name="android:textColor">@color/md_grey_800</item>
         <!-- just in case-->
-        <item name="colorAccent">@android:color/white</item>
+        <item name="colorAccent">@android:color/black</item>
         <!-- necessary to find the overflow button later in the layout-->
         <item name="android:actionOverflowButtonStyle">@style/Widget.ActionButton.Overflow</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+    </style>
+
+    <style name="AboutActivityTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:colorEdgeEffect">#ffffff</item>
+    </style>
+
+    <style name="LicenseDialogStyle" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="colorPrimary">@color/md_red_600</item>
+        <item name="android:colorEdgeEffect">#ffffff</item>
     </style>
 
     <style name="Theme.Music.Base.Black" parent="@style/Theme.Music.Base">
@@ -47,7 +56,7 @@
         <item name="defaultFooterColor">@color/md_grey_800</item>
         <item name="cardBackgroundColor">@color/md_grey_900</item>
         <item name="md_background_color">@color/md_grey_900</item>
-        <item name="android:textColor">@color/white</item>
+        <item name="android:textColor">@color/md_white_1000</item>
     </style>
 
     <style name="FabParent">

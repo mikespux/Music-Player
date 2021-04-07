@@ -131,13 +131,13 @@ public class MusicService extends Service implements SharedPreferences.OnSharedP
 
     public boolean pendingQuit = false;
 
-    private AppWidgetBig appWidgetBig = AppWidgetBig.getInstance();
-    private AppWidgetClassic appWidgetClassic = AppWidgetClassic.getInstance();
-    private AppWidgetClassicDark appWidgetClassicDark = AppWidgetClassicDark.getInstance();
-    private AppWidgetSmall appWidgetSmall = AppWidgetSmall.getInstance();
-    private AppWidgetSmallDark appWidgetSmallDark = AppWidgetSmallDark.getInstance();
-    private AppWidgetCard appWidgetCard = AppWidgetCard.getInstance();
-    private AppWidgetCardDark appWidgetCardDark = AppWidgetCardDark.getInstance();
+    private final AppWidgetBig appWidgetBig = AppWidgetBig.getInstance();
+    private final AppWidgetClassic appWidgetClassic = AppWidgetClassic.getInstance();
+    private final AppWidgetClassicDark appWidgetClassicDark = AppWidgetClassicDark.getInstance();
+    private final AppWidgetSmall appWidgetSmall = AppWidgetSmall.getInstance();
+    private final AppWidgetSmallDark appWidgetSmallDark = AppWidgetSmallDark.getInstance();
+    private final AppWidgetCard appWidgetCard = AppWidgetCard.getInstance();
+    private final AppWidgetCardDark appWidgetCardDark = AppWidgetCardDark.getInstance();
 
     private Playback playback;
     private List<Song> playingQueue = new ArrayList<>();
@@ -163,10 +163,10 @@ public class MusicService extends Service implements SharedPreferences.OnSharedP
     private QueueSaveHandler queueSaveHandler;
     private HandlerThread musicPlayerHandlerThread;
     private HandlerThread queueSaveHandlerThread;
-    private SongPlayCountHelper songPlayCountHelper = new SongPlayCountHelper();
+    private final SongPlayCountHelper songPlayCountHelper = new SongPlayCountHelper();
     private ThrottledSeekHandler throttledSeekHandler;
     private boolean becomingNoisyReceiverRegistered;
-    private IntentFilter becomingNoisyReceiverIntentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+    private final IntentFilter becomingNoisyReceiverIntentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private final BroadcastReceiver becomingNoisyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, @NonNull Intent intent) {
@@ -227,7 +227,6 @@ public class MusicService extends Service implements SharedPreferences.OnSharedP
         getContentResolver().registerContentObserver(MediaStore.Audio.Artists.INTERNAL_CONTENT_URI, true, mediaStoreObserver);
         getContentResolver().registerContentObserver(MediaStore.Audio.Genres.INTERNAL_CONTENT_URI, true, mediaStoreObserver);
         getContentResolver().registerContentObserver(MediaStore.Audio.Playlists.INTERNAL_CONTENT_URI, true, mediaStoreObserver);
-        
 
         PreferenceUtil.getInstance(this).registerOnSharedPreferenceChangedListener(this);
 
@@ -1005,32 +1004,44 @@ public class MusicService extends Service implements SharedPreferences.OnSharedP
         return shuffleMode;
     }
 
-    public void setShuffleMode(final int shuffleMode) {
-        PreferenceManager.getDefaultSharedPreferences(this).edit()
-                .putInt(SAVED_SHUFFLE_MODE, shuffleMode)
-                .apply();
-        switch (shuffleMode) {
-            case SHUFFLE_MODE_SHUFFLE:
-                this.shuffleMode = shuffleMode;
-                ShuffleHelper.makeShuffleList(this.getPlayingQueue(), getPosition());
-                position = 0;
-                break;
-            case SHUFFLE_MODE_NONE:
-                this.shuffleMode = shuffleMode;
-                int currentSongId = getCurrentSong().id;
-                playingQueue = new ArrayList<>(originalPlayingQueue);
-                int newPosition = 0;
-                for (Song song : getPlayingQueue()) {
-                    if (song.id == currentSongId) {
-                        newPosition = getPlayingQueue().indexOf(song);
-                    }
+    private final BroadcastReceiver widgetIntentReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            final String command = intent.getStringExtra(EXTRA_APP_WIDGET_NAME);
+
+            final int[] ids = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
+            switch (command) {
+                case AppWidgetClassic.NAME: {
+                    appWidgetClassic.performUpdate(MusicService.this, ids);
+                    break;
                 }
-                position = newPosition;
-                break;
+                case AppWidgetClassicDark.NAME: {
+                    appWidgetClassicDark.performUpdate(MusicService.this, ids);
+                    break;
+                }
+                case AppWidgetSmall.NAME: {
+                    appWidgetSmall.performUpdate(MusicService.this, ids);
+                    break;
+                }
+                case AppWidgetSmallDark.NAME: {
+                    appWidgetSmallDark.performUpdate(MusicService.this, ids);
+                    break;
+                }
+                case AppWidgetBig.NAME: {
+                    appWidgetBig.performUpdate(MusicService.this, ids);
+                    break;
+                }
+                case AppWidgetCard.NAME: {
+                    appWidgetCard.performUpdate(MusicService.this, ids);
+                    break;
+                }
+                case AppWidgetCardDark.NAME: {
+                    appWidgetCardDark.performUpdate(MusicService.this, ids);
+                    break;
+                }
+            }
         }
-        handleAndSendChangeInternal(SHUFFLE_MODE_CHANGED);
-        notifyChange(QUEUE_CHANGED);
-    }
+    };
 
     private void notifyChange(@NonNull final String what) {
         handleAndSendChangeInternal(what);
@@ -1316,49 +1327,69 @@ public class MusicService extends Service implements SharedPreferences.OnSharedP
         }
     }
 
-    private final BroadcastReceiver widgetIntentReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            final String command = intent.getStringExtra(EXTRA_APP_WIDGET_NAME);
+    public void setShuffleMode(final int shuffleMode) {
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                .putInt(SAVED_SHUFFLE_MODE, shuffleMode)
+                .apply();
+        switch (shuffleMode) {
+            case SHUFFLE_MODE_SHUFFLE:
+                this.shuffleMode = shuffleMode;
+                ShuffleHelper.makeShuffleList(this.getPlayingQueue(), getPosition());
+                position = 0;
+                break;
+            case SHUFFLE_MODE_NONE:
+                this.shuffleMode = shuffleMode;
+                long currentSongId = getCurrentSong().id;
+                playingQueue = new ArrayList<>(originalPlayingQueue);
+                int newPosition = 0;
+                for (Song song : getPlayingQueue()) {
+                    if (song.id == currentSongId) {
+                        newPosition = getPlayingQueue().indexOf(song);
+                    }
+                }
+                position = newPosition;
+                break;
+        }
+        handleAndSendChangeInternal(SHUFFLE_MODE_CHANGED);
+        notifyChange(QUEUE_CHANGED);
+    }
 
-            final int[] ids = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
-            switch (command) {
-                case AppWidgetClassic.NAME: {
-                    appWidgetClassic.performUpdate(MusicService.this, ids);
-                    break;
-                }
-                case AppWidgetClassicDark.NAME: {
-                    appWidgetClassicDark.performUpdate(MusicService.this, ids);
-                    break;
-                }
-                case AppWidgetSmall.NAME: {
-                    appWidgetSmall.performUpdate(MusicService.this, ids);
-                    break;
-                }
-                case AppWidgetSmallDark.NAME: {
-                    appWidgetSmallDark.performUpdate(MusicService.this, ids);
-                    break;
-                }
-                case AppWidgetBig.NAME: {
-                    appWidgetBig.performUpdate(MusicService.this, ids);
-                    break;
-                }
-                case AppWidgetCard.NAME: {
-                    appWidgetCard.performUpdate(MusicService.this, ids);
-                    break;
-                }
-                    case AppWidgetCardDark.NAME: {
-                        appWidgetCardDark.performUpdate(MusicService.this, ids);
-                        break;
+    private static class SongPlayCountHelper {
+        public static final String TAG = SongPlayCountHelper.class.getSimpleName();
+
+        private final StopWatch stopWatch = new StopWatch();
+        private Song song = Song.EMPTY_SONG;
+
+        public Song getSong() {
+            return song;
+        }
+
+        boolean shouldBumpPlayCount() {
+            return song.duration * 0.5d < stopWatch.getElapsedTime();
+        }
+
+        void notifySongChanged(Song song) {
+            synchronized (this) {
+                stopWatch.reset();
+                this.song = song;
+            }
+        }
+
+        void notifyPlayStateChanged(boolean isPlaying) {
+            synchronized (this) {
+                if (isPlaying) {
+                    stopWatch.start();
+                } else {
+                    stopWatch.pause();
                 }
             }
         }
-    };
+    }
 
     private class MediaStoreObserver extends ContentObserver implements Runnable {
         // milliseconds to delay before calling refresh to aggregate events
         private static final long REFRESH_DELAY = 500;
-        private Handler mHandler;
+        private final Handler mHandler;
 
         public MediaStoreObserver(Handler handler) {
             super(handler);
@@ -1385,7 +1416,7 @@ public class MusicService extends Service implements SharedPreferences.OnSharedP
     private class ThrottledSeekHandler implements Runnable {
         // milliseconds to throttle before calling run() to aggregate events
         private static final long THROTTLE = 500;
-        private Handler mHandler;
+        private final Handler mHandler;
 
         public ThrottledSeekHandler(Handler handler) {
             mHandler = handler;
@@ -1402,38 +1433,6 @@ public class MusicService extends Service implements SharedPreferences.OnSharedP
         public void run() {
             savePositionInSong();
             sendPublicIntent(PLAY_STATE_CHANGED); // for musixmatch synced lyrics
-        }
-    }
-
-    private static class SongPlayCountHelper {
-        public static final String TAG = SongPlayCountHelper.class.getSimpleName();
-
-        private StopWatch stopWatch = new StopWatch();
-        private Song song = Song.EMPTY_SONG;
-
-        public Song getSong() {
-            return song;
-        }
-
-        boolean shouldBumpPlayCount() {
-            return song.duration * 0.5d < stopWatch.getElapsedTime();
-        }
-
-        void notifySongChanged(Song song) {
-            synchronized (this) {
-                stopWatch.reset();
-                this.song = song;
-            }
-        }
-
-        void notifyPlayStateChanged(boolean isPlaying) {
-            synchronized (this) {
-                if (isPlaying) {
-                    stopWatch.start();
-                } else {
-                    stopWatch.pause();
-                }
-            }
         }
     }
 }

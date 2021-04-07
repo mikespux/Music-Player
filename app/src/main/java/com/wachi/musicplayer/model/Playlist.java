@@ -4,10 +4,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Playlist implements Parcelable {
-    public final int id;
+    public final long id;
     public final String name;
 
-    public Playlist(final int id, final String name) {
+    public Playlist(final long id, final String name) {
         this.id = id;
         this.name = name;
     }
@@ -29,11 +29,9 @@ public class Playlist implements Parcelable {
 
     }
 
-    @Override
-    public int hashCode() {
-        int result = id;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
+    protected Playlist(Parcel in) {
+        this.id = in.readLong();
+        this.name = in.readString();
     }
 
     @Override
@@ -51,14 +49,16 @@ public class Playlist implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(this.id);
-        dest.writeString(this.name);
+    public int hashCode() {
+        int result = (int) id;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result;
     }
 
-    protected Playlist(Parcel in) {
-        this.id = in.readInt();
-        this.name = in.readString();
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(this.id);
+        dest.writeString(this.name);
     }
 
     public static final Creator<Playlist> CREATOR = new Creator<Playlist>() {

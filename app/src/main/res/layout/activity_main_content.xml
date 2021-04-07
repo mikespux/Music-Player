@@ -19,79 +19,83 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-    <FrameLayout
-        android:id="@+id/fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        >
 
-    </FrameLayout>
-        <TextView
-            android:id="@+id/back_info"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            android:text="@string/back_again"
-            android:visibility="gone"
-            />
         <LinearLayout
-            android:id="@+id/banner_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/fragment_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/back_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/back_again"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/banner_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:orientation="vertical"
+                ads:layout_constraintBottom_toBottomOf="parent" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/admob_adplaceholder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
+            android:layout_gravity="bottom|center_horizontal"
             android:orientation="vertical"
-            ads:layout_constraintBottom_toBottomOf="parent"
-            />
+            android:padding="12dp"
+            android:visibility="gone">
 
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/admob_adplaceholder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_alignParentBottom="true"
-        android:padding="12dp"
-        android:orientation="vertical"
-        android:visibility="gone">
+            <include
+                layout="@layout/ad_unified"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
-        <include
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/fb_adplaceholder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            layout="@layout/ad_unified"/>
-
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/fb_adplaceholder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_alignParentBottom="true"
-        android:padding="12dp"
-        android:orientation="vertical"
-        android:visibility="gone">
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="bottom|center_horizontal"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:visibility="gone">
 
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <include layout="@layout/ad_fb_unified"
-                android:id="@+id/native_ad_container"
+            <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@android:color/white"
-                android:paddingBottom="5dp"/>
+                android:layout_height="match_parent">
 
-        </ScrollView>
+                <include
+                    android:id="@+id/native_ad_container"
+                    layout="@layout/ad_fb_unified"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/white"
+                    android:paddingBottom="5dp" />
+
+            </ScrollView>
 
 
-    </LinearLayout>
+        </LinearLayout>
     </RelativeLayout>
 </LinearLayout>

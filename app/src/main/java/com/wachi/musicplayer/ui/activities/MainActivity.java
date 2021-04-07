@@ -2,22 +2,21 @@ package com.wachi.musicplayer.ui.activities;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -31,48 +30,37 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
-import com.facebook.ads.AdListener;
 import com.facebook.ads.AdOptionsView;
-import com.facebook.ads.AdSize;
-
-import com.facebook.ads.AdView;
-import com.facebook.ads.InterstitialAd;
 import com.facebook.ads.InterstitialAdListener;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdLayout;
 import com.facebook.ads.NativeAdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.VideoController;
 import com.google.android.gms.ads.VideoOptions;
-import com.google.android.gms.ads.formats.MediaView;
 import com.google.android.gms.ads.formats.NativeAdOptions;
 import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAdView;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.kabouzeid.appthemehelper.ThemeStore;
-import com.kabouzeid.appthemehelper.common.prefs.supportv7.ATEPreferenceFragmentCompat;
 import com.kabouzeid.appthemehelper.util.ATHUtil;
 import com.kabouzeid.appthemehelper.util.NavigationViewUtil;
 import com.mopub.common.MoPub;
@@ -81,6 +69,7 @@ import com.mopub.common.SdkInitializationListener;
 import com.mopub.common.logging.MoPubLog;
 import com.mopub.mobileads.MoPubErrorCode;
 import com.mopub.mobileads.MoPubInterstitial;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.wachi.musicplayer.BuildConfig;
 import com.wachi.musicplayer.R;
 import com.wachi.musicplayer.dialogs.ScanMediaFolderChooserDialog;
@@ -100,7 +89,6 @@ import com.wachi.musicplayer.ui.fragments.mainactivity.library.LibraryFragment;
 import com.wachi.musicplayer.util.MusicUtil;
 import com.wachi.musicplayer.util.NavigationUtil;
 import com.wachi.musicplayer.util.PreferenceUtil;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -132,7 +120,6 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
     private View navigationDrawerHeader;
 
     private boolean blockRequestPermissions;
-    FloatingActionButton btnDownload;
 
     private AdView adView;
     View contentView;
@@ -144,13 +131,17 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
     SdkInitializationListener MopubListener;
     SdkConfiguration.Builder configBuilder;
 
-    private FirebaseRemoteConfig mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+    private final FirebaseRemoteConfig mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
     FirebaseRemoteConfigSettings configSettings;
     // cache expiration in seconds
     long cacheExpiration = 3600;
 
-    String app_unit_id="",banner_ad_unit_id="",native_ad_unit_id="",interstitial_ad_unit_id="";
-    String fbbanner_unit_id="",fbinterstitial_unit_id="",fbnative_unit_id="",mopub_banner_unit_id="",mopub_interstitial_unit_id="";
+    String app_unit_id = "", banner_ad_unit_id = "", native_ad_unit_id = "", interstitial_ad_unit_id = "";
+    String fbbanner_unit_id = "", fbinterstitial_unit_id = "", fbnative_unit_id = "", mopub_banner_unit_id = "", mopub_interstitial_unit_id = "";
+    String app_version = "", app_info = "";
+
+    // Find the Ad Container
+    LinearLayout adContainer;
 
     private UnifiedNativeAd nativeAd;
     LinearLayout admob_adplaceholder;
@@ -159,7 +150,6 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
     private NativeAd fbnativeAd;
     LinearLayout fb_adplaceholder;
     View fbadView;
-
 
     SharedPreferences prefs;
     Boolean purchased;
@@ -178,10 +168,6 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         setDrawUnderStatusbar();
         ButterKnife.bind(this);
 
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
-            navigationView.setFitsSystemWindows(false); // for header to go below statusbar
-        }
-
         setUpDrawerLayout();
 
         if (savedInstanceState == null) {
@@ -192,26 +178,8 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
 
         if (!checkShowIntro()) {
         }
-
-
     }
-    public boolean isOnline() {
-        try {
-            ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext()
-                    .getSystemService(Context.CONNECTIVITY_SERVICE);
 
-            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-            connected = networkInfo != null && networkInfo.isAvailable() &&
-                    networkInfo.isConnected();
-            return connected;
-
-
-        } catch (Exception e) {
-            System.out.println("CheckConnectivity Exception: " + e.getMessage());
-            Log.v("connectivity", e.toString());
-        }
-        return connected;
-    }
     private void setMusicChooser(int key) {
 
         PreferenceUtil.getInstance(this).setLastMusicChooser(key);
@@ -258,6 +226,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         contentView = getLayoutInflater().inflate(R.layout.activity_main_drawer_layout, null);
         ViewGroup drawerContent = contentView.findViewById(R.id.drawer_content_container);
         drawerContent.addView(wrapSlidingMusicPanel(R.layout.activity_main_content));
+
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         laughtCount = getlaughCount();
         if(laughtCount == 5){ showRateDialog();}
@@ -274,11 +243,6 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         fb_adplaceholder = contentView.findViewById(R.id.fb_adplaceholder);
         fb_adplaceholder.setBackgroundColor(ThemeStore.primaryColor(this));
 
-        // Initialize the Mobile Ads SDK.
-        MobileAds.initialize(this, new OnInitializationCompleteListener() {
-            @Override
-            public void onInitializationComplete(InitializationStatus initializationStatus) {}
-        });
 
         configSettings = new FirebaseRemoteConfigSettings.Builder()
                 .setMinimumFetchIntervalInSeconds(cacheExpiration)
@@ -299,7 +263,14 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                 mopub_banner_unit_id = mFirebaseRemoteConfig.getString("mopub_banner_unit_id");
                 mopub_interstitial_unit_id = mFirebaseRemoteConfig.getString("mopub_interstitial_unit_id");
 
+                app_version = mFirebaseRemoteConfig.getString("app_version");
+                app_info = mFirebaseRemoteConfig.getString("app_info");
 
+                adContainer = contentView.findViewById(R.id.banner_container);
+                adView = new AdView(getApplicationContext());
+                adView.setAdSize(AdSize.BANNER);
+                adView.setAdUnitId(banner_ad_unit_id);
+                adContainer.addView(adView);
 
                 if (!purchased) {
                     Log.i(TAG, "banner_ad_unit_id " + banner_ad_unit_id);
@@ -313,11 +284,12 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                     Log.i(TAG, "mopub_banner_unit_id " + mopub_banner_unit_id);
                     Log.i(TAG, "mopub_interstitial_unit_id " + mopub_interstitial_unit_id);
 
-                    fbAdview();
+                    adview();
                     refreshAd();
                     loadNativeAd();
                     AdmobInterstitial();
                     FbInterstitial();
+                    // MediationTestSuite.launch(this);
                     configBuilder = new SdkConfiguration.Builder(mopub_interstitial_unit_id);
                     if (BuildConfig.DEBUG) {
                         configBuilder.withLogLevel(MoPubLog.LogLevel.DEBUG)
@@ -326,12 +298,9 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                     } else {
                         configBuilder.withLogLevel(INFO);
                     }
-                    MopubListener = new SdkInitializationListener() {
-                        @Override
-                        public void onInitializationFinished() {
-                            Log.d("MoPub", "SDK initialized");
-                            MopubInterstitial();
-                        }
+                    MopubListener = () -> {
+                        Log.d("MoPub", "SDK initialized");
+                        MopubInterstitial();
                     };
                     SampleActivityUtils.addDefaultNetworkConfiguration(configBuilder);
                     MoPub.initializeSdk(this, configBuilder.build(), MopubListener);
@@ -342,111 +311,166 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                 mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
                 mFirebaseRemoteConfig.setDefaultsAsync(R.xml.remote_config_defaults);
                 mFirebaseRemoteConfig.fetchAndActivate()
-                        .addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Boolean> task) {
-                                if (task.isSuccessful()) {
-                                    boolean updated = task.getResult();
-                                    Log.d(TAG, "Config params updated: " + updated);
-                                    Log.i(TAG, "Fetch and activate succeeded");
-                                    //Toast.makeText(InAppBillingActivity.this, "Fetch and activate succeeded",Toast.LENGTH_SHORT).show();
+                        .addOnCompleteListener(this, task -> {
+                            if (task.isSuccessful()) {
+                                boolean updated = task.getResult();
+                                Log.d(TAG, "Config params updated: " + updated);
+                                Log.i(TAG, "Fetch and activate succeeded");
+                                //Toast.makeText(InAppBillingActivity.this, "Fetch and activate succeeded",Toast.LENGTH_SHORT).show();
 
-                                    banner_ad_unit_id = mFirebaseRemoteConfig.getString("banner_ad_unit_id");
-                                    native_ad_unit_id = mFirebaseRemoteConfig.getString("native_ad_unit_id");
-                                    interstitial_ad_unit_id = mFirebaseRemoteConfig.getString("interstitial_ad_unit_id");
+                                banner_ad_unit_id = mFirebaseRemoteConfig.getString("banner_ad_unit_id");
+                                native_ad_unit_id = mFirebaseRemoteConfig.getString("native_ad_unit_id");
+                                interstitial_ad_unit_id = mFirebaseRemoteConfig.getString("interstitial_ad_unit_id");
 
-                                    fbbanner_unit_id = mFirebaseRemoteConfig.getString("fbbanner_unit_id");
-                                    fbinterstitial_unit_id = mFirebaseRemoteConfig.getString("fbinterstitial_unit_id");
-                                    fbnative_unit_id = mFirebaseRemoteConfig.getString("fbnative_unit_id");
+                                fbbanner_unit_id = mFirebaseRemoteConfig.getString("fbbanner_unit_id");
+                                fbinterstitial_unit_id = mFirebaseRemoteConfig.getString("fbinterstitial_unit_id");
+                                fbnative_unit_id = mFirebaseRemoteConfig.getString("fbnative_unit_id");
 
-                                    mopub_banner_unit_id = mFirebaseRemoteConfig.getString("mopub_banner_unit_id");
-                                    mopub_interstitial_unit_id = mFirebaseRemoteConfig.getString("mopub_interstitial_unit_id");
-
-                                    SharedPreferences.Editor edit = prefs.edit();
-                                    edit.putString("interstitial_ad_unit_id", interstitial_ad_unit_id);
-                                    edit.commit();
-
-                                    edit.putString("fbinterstitial_unit_id", fbinterstitial_unit_id);
-                                    edit.commit();
-
-                                    edit.putString("fbnative_unit_id", fbnative_unit_id);
-                                    edit.commit();
-
-                                    edit.putString("mopub_interstitial_unit_id", mopub_interstitial_unit_id);
-                                    edit.commit();
-                                } else {
-                                    //Toast.makeText(InAppBillingActivity.this, "Fetch failed",Toast.LENGTH_SHORT).show();
-                                    Log.i(TAG, "Fetch failed");
-                                }
-                                //Toast.makeText(InAppBillingActivity.this, Interstitial_unit_id,Toast.LENGTH_SHORT).show();
-
-                                Log.i(TAG, "banner_ad_unit_id " + banner_ad_unit_id);
-                                Log.i(TAG, "native_ad_unit_id " + native_ad_unit_id);
-                                Log.i(TAG, "interstitial_ad_unit_id " + interstitial_ad_unit_id);
-
-                                Log.i(TAG, "fbbanner_unit_id " + fbbanner_unit_id);
-                                Log.i(TAG, "fbinterstitial_unit_id " + fbinterstitial_unit_id);
-                                Log.i(TAG, "fbnative_unit_id " + fbnative_unit_id);
-
-                                Log.i(TAG, "mopub_banner_unit_id " + mopub_banner_unit_id);
-                                Log.i(TAG, "mopub_interstitial_unit_id " + mopub_interstitial_unit_id);
+                                mopub_banner_unit_id = mFirebaseRemoteConfig.getString("mopub_banner_unit_id");
+                                mopub_interstitial_unit_id = mFirebaseRemoteConfig.getString("mopub_interstitial_unit_id");
 
 
+                                app_version = mFirebaseRemoteConfig.getString("app_version");
+                                app_info = mFirebaseRemoteConfig.getString("app_info");
 
+                                SharedPreferences.Editor edit = prefs.edit();
+                                edit.putString("interstitial_ad_unit_id", interstitial_ad_unit_id);
+                                edit.commit();
 
-                                if (!purchased) {
-                                    fbAdview();
-                                    refreshAd();
-                                    loadNativeAd();
-                                    AdmobInterstitial();
-                                    FbInterstitial();
-                                    configBuilder = new SdkConfiguration.Builder(mopub_interstitial_unit_id);
-                                    if (BuildConfig.DEBUG) {
-                                        configBuilder.withLogLevel(MoPubLog.LogLevel.DEBUG)
-                                                .withLegitimateInterestAllowed(false)
-                                                .build();
-                                    } else {
-                                        configBuilder.withLogLevel(INFO);
-                                    }
-                                    MopubListener = new SdkInitializationListener() {
-                                        @Override
-                                        public void onInitializationFinished() {
-                                            Log.d("MoPub", "SDK initialized");
-                                            MopubInterstitial();
-                                        }
-                                    };
-                                    SampleActivityUtils.addDefaultNetworkConfiguration(configBuilder);
-                                    MoPub.initializeSdk(MainActivity.this, configBuilder.build(), MopubListener);
+                                edit.putString("fbinterstitial_unit_id", fbinterstitial_unit_id);
+                                edit.commit();
 
-                                }else{
-                                    adView.setVisibility(View.GONE);
-                                }
+                                edit.putString("fbnative_unit_id", fbnative_unit_id);
+                                edit.commit();
 
+                                edit.putString("mopub_interstitial_unit_id", mopub_interstitial_unit_id);
+                                edit.commit();
+                            } else {
+                                //Toast.makeText(InAppBillingActivity.this, "Fetch failed",Toast.LENGTH_SHORT).show();
+                                Log.i(TAG, "Fetch failed");
                             }
+                            //Toast.makeText(InAppBillingActivity.this, Interstitial_unit_id,Toast.LENGTH_SHORT).show();
+
+                            Log.i(TAG, "banner_ad_unit_id " + banner_ad_unit_id);
+                            Log.i(TAG, "native_ad_unit_id " + native_ad_unit_id);
+                            Log.i(TAG, "interstitial_ad_unit_id " + interstitial_ad_unit_id);
+
+                            Log.i(TAG, "fbbanner_unit_id " + fbbanner_unit_id);
+                            Log.i(TAG, "fbinterstitial_unit_id " + fbinterstitial_unit_id);
+                            Log.i(TAG, "fbnative_unit_id " + fbnative_unit_id);
+
+                            Log.i(TAG, "mopub_banner_unit_id " + mopub_banner_unit_id);
+                            Log.i(TAG, "mopub_interstitial_unit_id " + mopub_interstitial_unit_id);
+
+                            adContainer = contentView.findViewById(R.id.banner_container);
+                            adView = new AdView(getApplicationContext());
+                            adView.setAdSize(AdSize.BANNER);
+                            adView.setAdUnitId(banner_ad_unit_id);
+                            adContainer.addView(adView);
+
+
+                            if (!purchased) {
+                                adview();
+                                refreshAd();
+                                loadNativeAd();
+                                AdmobInterstitial();
+                                FbInterstitial();
+                                configBuilder = new SdkConfiguration.Builder(mopub_interstitial_unit_id);
+                                if (BuildConfig.DEBUG) {
+                                    configBuilder.withLogLevel(MoPubLog.LogLevel.DEBUG)
+                                            .withLegitimateInterestAllowed(false)
+                                            .build();
+                                } else {
+                                    configBuilder.withLogLevel(INFO);
+                                }
+                                MopubListener = () -> {
+                                    Log.d("MoPub", "SDK initialized");
+                                    MopubInterstitial();
+                                };
+                                SampleActivityUtils.addDefaultNetworkConfiguration(configBuilder);
+                                MoPub.initializeSdk(MainActivity.this, configBuilder.build(), MopubListener);
+
+                            } else {
+                                adView.setVisibility(View.GONE);
+                            }
+
                         });
             }
         }
-
-
-
-
-
         return contentView;
     }
+
+    public boolean isOnline() {
+        try {
+            ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext()
+                    .getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            connected = networkInfo != null && networkInfo.isAvailable() &&
+                    networkInfo.isConnected();
+            return connected;
+
+
+        } catch (Exception e) {
+            System.out.println("CheckConnectivity Exception: " + e.getMessage());
+            Log.v("connectivity", e.toString());
+        }
+        return connected;
+    }
+
+    public void AppInfo() {
+        android.app.AlertDialog.Builder alertDialog = new android.app.AlertDialog.Builder(
+                MainActivity.this);
+        // Setting Dialog Title
+        //alertDialog.setTitle("Wachi Music Player");
+        // Setting Dialog Message
+        //alertDialog.getContext().setTheme(colorMap.getPrimaryColorRes());
+        alertDialog.setMessage(Html.fromHtml(app_info));
+
+        // Setting Positive "Yes" Button
+        alertDialog.setPositiveButton("Update Now",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        final String appPackageName = getPackageName(); // getPackageName() from Context or Activity object
+                        try {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+                        } catch (android.content.ActivityNotFoundException anfe) {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+                        }
+                    }
+                });
+        // Setting Negative "NO" Button
+        alertDialog.setNegativeButton("Update Later",
+                (dialog, which) -> {
+                    // Write your code here to invoke NO event
+                    dialog.cancel();
+                });
+        // Showing Alert Message
+        alertDialog.show();
+    }
+
     public void onBackPressed() {
         laughtCount = getlaughCount();
-        if(laughtCount == 5){setLaughCount(laughtCount+1); showRateDialog();}
-        if(laughtCount == 10){setLaughCount(laughtCount+1); showRateDialog();}
-        if(laughtCount == 15){setLaughCount(laughtCount+1); showRateDialog();}
-        if(isOnline()) {
+        if (laughtCount == 5) {
+            setLaughCount(laughtCount + 1);
+            showRateDialog();
+        }
+        if (laughtCount == 10) {
+            setLaughCount(laughtCount + 1);
+            showRateDialog();
+        }
+        if (laughtCount == 15) {
+            setLaughCount(laughtCount + 1);
+            showRateDialog();
+        }
+        if (isOnline()) {
 
             purchased = prefs.getBoolean(PURCHASE_KEY, false);
             if (!purchased) {
                 if (nativeAd != null) {
                     admob_adplaceholder.setVisibility(View.VISIBLE);
                     return;
-                }
-                else{
+                } else {
                     if (fbnativeAd != null && fbnativeAd.isAdLoaded()) {
                         fb_adplaceholder.setVisibility(View.VISIBLE);
                         return;
@@ -477,56 +501,34 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
 
             @Override
             public void run() {
-                doubleBackToExitPressedOnce=false;
+                doubleBackToExitPressedOnce = false;
 
             }
         }, 2000);
 
     }
-    public  void fbAdview(){
-        //adView = new AdView(this, "IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID", AdSize.BANNER_HEIGHT_50);
-        adView = new AdView(this, fbbanner_unit_id, AdSize.BANNER_HEIGHT_50);
 
+    public void adview() {
 
-        // Find the Ad Container
-        LinearLayout adContainer = contentView.findViewById(R.id.banner_container);
+        // Set your test devices. Check your logcat output for the hashed device ID to
+        // get test ads on a physical device. e.g.
+        // "Use RequestConfiguration.Builder().setTestDeviceIds(Arrays.asList("ABCDEF012345"))
+        // to get test ads on this device."
+        MobileAds.setRequestConfiguration(new RequestConfiguration.Builder().setTestDeviceIds(Arrays.asList("ABCDEF012345")).build());
+        // Gets the ad view defined in layout/ad_fragment.xml with ad unit ID set in
+        // values/strings.xml.
+        // Create an ad request.
+        AdRequest adRequest = new AdRequest.Builder().build();
 
-        // Add the ad view to your activity layout
-        adContainer.addView(adView);
-
-
-        AdListener adListener = new AdListener() {
-            @Override
-            public void onError(Ad ad, AdError adError) {
-                // Ad error callback
-               // Toast.makeText(MainActivity.this,"Error: " + adError.getErrorMessage(),Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onAdLoaded(Ad ad) {
-                // Ad loaded callback
-            }
-
-            @Override
-            public void onAdClicked(Ad ad) {
-                // Ad clicked callback
-            }
-
-            @Override
-            public void onLoggingImpression(Ad ad) {
-                // Ad impression logged callback
-            }
-        };
-
-        // Request an ad
-        adView.loadAd(adView.buildLoadAdConfig().withAdListener(adListener).build());
+        // Start loading the ad in the background.
+        adView.loadAd(adRequest);
     }
     private void showMopubInterstitial() {
         // Show the ad if it's ready. Otherwise toast and restart the game.
         if (mInterstitial != null && mInterstitial.isReady()) {
             mInterstitial.show();
         } else {
-            showFbInterstitial();
+            showAdmobInterstitial();
             // Caching is likely already in progress if `isReady()` is false.
             // Avoid calling `load()` here and instead rely on the callbacks as suggested below.
             //Toast.makeText(this, "Ad did not load", Toast.LENGTH_SHORT).show();
@@ -860,7 +862,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
             }
         });
         // Set the media view.
-        adView.setMediaView((MediaView) adView.findViewById(R.id.ad_media));
+        adView.setMediaView(adView.findViewById(R.id.ad_media));
 
         // Set other ad assets.
         adView.setHeadlineView(adView.findViewById(R.id.ad_headline));
@@ -1049,6 +1051,10 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                 mopub_banner_unit_id = mFirebaseRemoteConfig.getString("mopub_banner_unit_id");
                 mopub_interstitial_unit_id = mFirebaseRemoteConfig.getString("mopub_interstitial_unit_id");
 
+
+                if (adView != null) {
+                    adView.resume();
+                }
                 interstitialAd = new com.google.android.gms.ads.InterstitialAd(this);
 
                 AdmobInterstitial();
@@ -1058,10 +1064,15 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                 loadNativeAd();
 
 
-
                 //Toast.makeText(MainActivity.this, String.valueOf(purchased),Toast.LENGTH_SHORT).show();
             }
-
+            app_version = mFirebaseRemoteConfig.getString("app_version");
+            app_info = mFirebaseRemoteConfig.getString("app_info");
+            if (Integer.parseInt(app_version) > Integer.parseInt(getResources().getString(R.string.app_version))) {
+                if (laughtCount % 2 == 0) {
+                    AppInfo();
+                }
+            }
         }
     }
 
@@ -1089,7 +1100,6 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         }
         super.onDestroy();
     }
-
     private void setUpNavigationView() {
         int accentColor = ThemeStore.accentColor(this);
         NavigationViewUtil.setItemIconColors(navigationView, ATHUtil.resolveColor(this, R.attr.iconColor, ThemeStore.textColorSecondary(this)), accentColor);
@@ -1142,7 +1152,6 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                     laughtCount = getlaughCount();
                     setLaughCount(laughtCount+1);
                     NavigationUtil.openEqualizer(this);
-
                     break;
                 case R.id.nav_settings:
                     laughtCount = getlaughCount();
@@ -1163,33 +1172,11 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                     showRateDialog();
                     break;
                 case R.id.nav_about:
-                    new Handler().postDelayed(() -> startActivity(new Intent(MainActivity.this, AboutActivity.class)), 0);
+                    new Handler().postDelayed(() -> startActivity(new Intent(MainActivity.this, AboutActivity.class)), 200);
                     break;
             }
             return true;
         });
-    }
-
-    public void rateApp() {
-        try {
-            Intent rateIntent = rateIntentForUrl("market://details");
-            startActivity(rateIntent);
-        } catch (ActivityNotFoundException e) {
-            Intent rateIntent = rateIntentForUrl("https://play.google.com/store/apps/details");
-            startActivity(rateIntent);
-        }
-    }
-
-    private Intent rateIntentForUrl(String url) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(String.format("%s?id=%s", url, getApplicationContext().getPackageName())));
-        int flags = Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
-        if (Build.VERSION.SDK_INT >= 21) {
-            flags |= Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
-        } else {
-            flags |= Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET;
-        }
-        intent.addFlags(flags);
-        return intent;
     }
 
     private void setUpDrawerLayout() {
@@ -1280,7 +1267,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
             MusicPlayerRemote.playFromUri(uri);
             handled = true;
         } else if (MediaStore.Audio.Playlists.CONTENT_TYPE.equals(mimeType)) {
-            final int id = (int) parseIdFromIntent(intent, "playlistId", "playlist");
+            final long id = parseIdFromIntent(intent, "playlistId", "playlist");
             if (id >= 0) {
                 int position = intent.getIntExtra("position", 0);
                 List<Song> songs = new ArrayList<>(PlaylistSongLoader.getPlaylistSongList(this, id));
@@ -1288,14 +1275,14 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                 handled = true;
             }
         } else if (MediaStore.Audio.Albums.CONTENT_TYPE.equals(mimeType)) {
-            final int id = (int) parseIdFromIntent(intent, "albumId", "album");
+            final long id = parseIdFromIntent(intent, "albumId", "album");
             if (id >= 0) {
                 int position = intent.getIntExtra("position", 0);
                 MusicPlayerRemote.openQueue(AlbumLoader.getAlbum(this, id).songs, position, true);
                 handled = true;
             }
         } else if (MediaStore.Audio.Artists.CONTENT_TYPE.equals(mimeType)) {
-            final int id = (int) parseIdFromIntent(intent, "artistId", "artist");
+            final long id = parseIdFromIntent(intent, "artistId", "artist");
             if (id >= 0) {
                 int position = intent.getIntExtra("position", 0);
                 MusicPlayerRemote.openQueue(ArtistLoader.getArtist(this, id).getSongs(), position, true);

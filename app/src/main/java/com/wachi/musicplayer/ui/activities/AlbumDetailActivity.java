@@ -2,14 +2,20 @@ package com.wachi.musicplayer.ui.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,13 +31,12 @@ import com.afollestad.materialcab.MaterialCab;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.util.DialogUtils;
 import com.bumptech.glide.Glide;
-import com.facebook.ads.AdView;
 import com.github.ksoichiro.android.observablescrollview.ObservableRecyclerView;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.kabouzeid.appthemehelper.util.ColorUtil;
@@ -123,6 +128,19 @@ public class AlbumDetailActivity extends AbsSlidingMusicPanelActivity implements
     private MaterialDialog wikiDialog;
     private LastFMRestClient lastFMRestClient;
 
+    public static final String PURCHASE_KEY = "purchase";
+    private final FirebaseRemoteConfig mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+    FirebaseRemoteConfigSettings configSettings;
+    // cache expiration in seconds
+    long cacheExpiration = 3600;
+    String banner_ad_unit_id = "";
+    // Find the Ad Container
+    LinearLayout adContainer;
+    boolean connected = false;
+    SharedPreferences prefs;
+    Boolean purchased;
+    private AdView adView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,32 +155,136 @@ public class AlbumDetailActivity extends AbsSlidingMusicPanelActivity implements
 
         getSupportLoaderManager().initLoader(LOADER_ID, getIntent().getExtras(), this);
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        purchased = prefs.getBoolean(PURCHASE_KEY, false);
+        configSettings = new FirebaseRemoteConfigSettings.Builder()
+                .setMinimumFetchIntervalInSeconds(cacheExpiration)
+                .build();
+
+        if (isOnline()) {
+            if (getResources().getString(R.string.ADS_VISIBILITY).equals("NO")) {
+
+                mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
+                mFirebaseRemoteConfig.setDefaultsAsync(R.xml.remote_config_defaults);
+
+                banner_ad_unit_id = mFirebaseRemoteConfig.getString("banner_ad_unit_id");
+
+                adContainer = findViewById(R.id.banner_container);
+                adView = new AdView(getApplicationContext());
+                adView.setAdSize(AdSize.BANNER);
+                adView.setAdUnitId(banner_ad_unit_id);
+                adContainer.addView(adView);
+
+                if (!purchased) {
+                    adview();
+                }
+            } else {
+
+                mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
+                mFirebaseRemoteConfig.setDefaultsAsync(R.xml.remote_config_defaults);
+                mFirebaseRemoteConfig.fetchAndActivate()
+                        .addOnCompleteListener(this, task -> {
+                            if (task.isSuccessful()) {
+                                boolean updated = task.getResult();
+                                //Toast.makeText(InAppBillingActivity.this, "Fetch and activate succeeded",Toast.LENGTH_SHORT).show();
+
+                                banner_ad_unit_id = mFirebaseRemoteConfig.getString("banner_ad_unit_id");
+
+                            } else {
+                                //Toast.makeText(InAppBillingActivity.this, "Fetch failed",Toast.LENGTH_SHORT).show();
+
+                            }
+                            //Toast.makeText(InAppBillingActivity.this, Interstitial_unit_id,Toast.LENGTH_SHORT).show();
+
+
+                            adContainer = findViewById(R.id.banner_container);
+                            adView = new AdView(getApplicationContext());
+                            adView.setAdSize(AdSize.BANNER);
+                            adView.setAdUnitId(banner_ad_unit_id);
+                            adContainer.addView(adView);
+
+
+                            if (!purchased) {
+                                adview();
+
+                            } else {
+                                adView.setVisibility(View.GONE);
+                            }
+
+                        });
+            }
+        }
+    }
+
+    public boolean isOnline() {
+        try {
+            ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext()
+                    .getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            connected = networkInfo != null && networkInfo.isAvailable() &&
+                    networkInfo.isConnected();
+            return connected;
+
+
+        } catch (Exception e) {
+            System.out.println("CheckConnectivity Exception: " + e.getMessage());
+            Log.v("connectivity", e.toString());
+        }
+        return connected;
+    }
+
+    public void adview() {
+
+        // Set your test devices. Check your logcat output for the hashed device ID to
+        // get test ads on a physical device. e.g.
+        // "Use RequestConfiguration.Builder().setTestDeviceIds(Arrays.asList("ABCDEF012345"))
+        // to get test ads on this device."
+        MobileAds.setRequestConfiguration(new RequestConfiguration.Builder().setTestDeviceIds(Arrays.asList("ABCDEF012345")).build());
+        // Gets the ad view defined in layout/ad_fragment.xml with ad unit ID set in
+        // values/strings.xml.
+        // Create an ad request.
+        AdRequest adRequest = new AdRequest.Builder().build();
+
+        // Start loading the ad in the background.
+        adView.loadAd(adRequest);
+    }
+
+    /**
+     * Called when returning to the activity
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (isOnline()) {
+            purchased = prefs.getBoolean(PURCHASE_KEY, false);
+            if (!purchased) {
+                if (adView != null) {
+                    adView.resume();
+                }
+            }
+
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (isOnline()) {
+            if (!purchased) {
+                if (adView != null) {
+                    adView.destroy();
+                }
+
+            }
+        }
+        super.onDestroy();
     }
 
     @Override
     protected View createContentView() {
         return wrapSlidingMusicPanel(R.layout.activity_album_detail);
     }
-    /** Called when leaving the activity */
-    @Override
-    public void onPause() {
 
-        super.onPause();
-    }
-
-    /** Called when returning to the activity */
-    @Override
-    public void onResume() {
-        super.onResume();
-
-    }
-
-    /** Called before the activity is destroyed */
-    @Override
-    public void onDestroy() {
-
-        super.onDestroy();
-    }
     private final SimpleObservableScrollViewCallbacks observableScrollViewCallbacks = new SimpleObservableScrollViewCallbacks() {
         @Override
         public void onScrollChanged(int scrollY, boolean b, boolean b2) {
@@ -246,7 +368,7 @@ public class AlbumDetailActivity extends AbsSlidingMusicPanelActivity implements
     }
 
     private void setUpToolBar() {
-        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearace);
+        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearance);
         setSupportActionBar(toolbar);
         //noinspection ConstantConditions
         getSupportActionBar().setTitle(null);
@@ -392,6 +514,7 @@ public class AlbumDetailActivity extends AbsSlidingMusicPanelActivity implements
     @Override
     public MaterialCab openCab(int menuRes, @NonNull final MaterialCab.Callback callback) {
         if (cab != null && cab.isActive()) cab.finish();
+        adapter.setColor(getPaletteColor());
         cab = new MaterialCab(this, R.id.cab_stub)
                 .setMenu(menuRes)
                 .setCloseDrawableRes(R.drawable.ic_close_white_24dp)
@@ -460,7 +583,7 @@ public class AlbumDetailActivity extends AbsSlidingMusicPanelActivity implements
 
     @Override
     public Loader<Album> onCreateLoader(int id, Bundle args) {
-        return new AsyncAlbumLoader(this, args.getInt(EXTRA_ALBUM_ID));
+        return new AsyncAlbumLoader(this, args.getLong(EXTRA_ALBUM_ID));
     }
 
     @Override
@@ -475,9 +598,9 @@ public class AlbumDetailActivity extends AbsSlidingMusicPanelActivity implements
     }
 
     private static class AsyncAlbumLoader extends WrappedAsyncTaskLoader<Album> {
-        private final int albumId;
+        private final long albumId;
 
-        public AsyncAlbumLoader(Context context, int albumId) {
+        public AsyncAlbumLoader(Context context, long albumId) {
             super(context);
             this.albumId = albumId;
         }

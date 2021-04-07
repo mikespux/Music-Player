@@ -5,10 +5,10 @@ import android.os.Parcel;
 public class PlaylistSong extends Song {
     public static final PlaylistSong EMPTY_PLAYLIST_SONG = new PlaylistSong(-1, "", -1, -1, -1, "", -1, -1, "", -1, "", -1, -1);
 
-    public final int playlistId;
-    public final int idInPlayList;
+    public final long playlistId;
+    public final long idInPlayList;
 
-    public PlaylistSong(int id, String title, int songNumber, int year, long duration, String data, int dateModified, int albumId, String albumName, int artistId, String artistName, final int playlistId, final int idInPlayList) {
+    public PlaylistSong(long id, String title, int songNumber, int year, long duration, String data, int dateModified, long albumId, String albumName, long artistId, String artistName, final long playlistId, final long idInPlayList) {
         super(id, title, songNumber, year, duration, data, dateModified, albumId, albumName, artistId, artistName);
         this.playlistId = playlistId;
         this.idInPlayList = idInPlayList;
@@ -27,12 +27,10 @@ public class PlaylistSong extends Song {
 
     }
 
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + playlistId;
-        result = 31 * result + idInPlayList;
-        return result;
+    protected PlaylistSong(Parcel in) {
+        super(in);
+        this.playlistId = in.readLong();
+        this.idInPlayList = in.readLong();
     }
 
     @Override
@@ -51,16 +49,18 @@ public class PlaylistSong extends Song {
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        super.writeToParcel(dest, flags);
-        dest.writeInt(this.playlistId);
-        dest.writeInt(this.idInPlayList);
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (int) playlistId;
+        result = 31 * result + (int) idInPlayList;
+        return result;
     }
 
-    protected PlaylistSong(Parcel in) {
-        super(in);
-        this.playlistId = in.readInt();
-        this.idInPlayList = in.readInt();
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        super.writeToParcel(dest, flags);
+        dest.writeLong(this.playlistId);
+        dest.writeLong(this.idInPlayList);
     }
 
     public static final Creator<PlaylistSong> CREATOR = new Creator<PlaylistSong>() {

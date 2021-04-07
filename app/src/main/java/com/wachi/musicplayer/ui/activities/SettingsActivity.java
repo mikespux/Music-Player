@@ -1,15 +1,10 @@
 package com.wachi.musicplayer.ui.activities;
 
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.LinearLayout;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -22,18 +17,6 @@ import androidx.preference.PreferenceManager;
 import androidx.preference.TwoStatePreference;
 
 import com.afollestad.materialdialogs.color.ColorChooserDialog;
-import com.facebook.ads.Ad;
-import com.facebook.ads.AdError;
-import com.facebook.ads.AdListener;
-import com.facebook.ads.AdSize;
-import com.facebook.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.kabouzeid.appthemehelper.ThemeStore;
 import com.kabouzeid.appthemehelper.common.prefs.supportv7.ATEColorPreference;
 import com.kabouzeid.appthemehelper.common.prefs.supportv7.ATEPreferenceFragmentCompat;
@@ -55,24 +38,11 @@ import java.util.Arrays;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-
 public class SettingsActivity extends AbsBaseActivity implements ColorChooserDialog.ColorCallback {
-    public static final String TAG = SettingsActivity.class.getSimpleName();
+
     @BindView(R.id.toolbar)
     Toolbar toolbar;
-    private AdView adView;
 
-    SharedPreferences prefs;
-    Boolean purchased;
-    boolean connected = false;
-    public static final String PURCHASE_KEY= "purchase";
-    private FirebaseRemoteConfig mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
-    FirebaseRemoteConfigSettings configSettings;
-    // cache expiration in seconds
-    long cacheExpiration = 3600;
-
-    String app_unit_id="",banner_ad_unit_id="",native_ad_unit_id="",interstitial_ad_unit_id="";
-    String fbbanner_unit_id="",fbinterstitial_unit_id="",fbnative_unit_id="",mopub_banner_unit_id="",mopub_interstitial_unit_id="";
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,7 +55,7 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
         setTaskDescriptionColorAuto();
 
         toolbar.setBackgroundColor(ThemeStore.primaryColor(this));
-        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearace);
+        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearance);
         setSupportActionBar(toolbar);
         //noinspection ConstantConditions
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -96,181 +66,8 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
             SettingsFragment frag = (SettingsFragment) getSupportFragmentManager().findFragmentById(R.id.content_frame);
             if (frag != null) frag.invalidateSettings();
         }
-        prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        purchased=prefs.getBoolean(PURCHASE_KEY,false);
-
-        MobileAds.initialize(this, new OnInitializationCompleteListener() {
-            @Override
-            public void onInitializationComplete(InitializationStatus initializationStatus) {}
-        });
-
-        configSettings = new FirebaseRemoteConfigSettings.Builder()
-                .setMinimumFetchIntervalInSeconds(cacheExpiration)
-                .build();
-
-        if(isOnline()) {
-            if (getResources().getString(R.string.ADS_VISIBILITY).equals("NO")) {
-
-                mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
-                mFirebaseRemoteConfig.setDefaultsAsync(R.xml.remote_config_defaults);
-
-                banner_ad_unit_id = mFirebaseRemoteConfig.getString("banner_ad_unit_id");
-                native_ad_unit_id = mFirebaseRemoteConfig.getString("native_ad_unit_id");
-                interstitial_ad_unit_id = mFirebaseRemoteConfig.getString("interstitial_ad_unit_id");
-                fbbanner_unit_id = mFirebaseRemoteConfig.getString("fbbanner_unit_id");
-                fbinterstitial_unit_id = mFirebaseRemoteConfig.getString("fbinterstitial_unit_id");
-                fbnative_unit_id = mFirebaseRemoteConfig.getString("fbnative_unit_id");
-                mopub_banner_unit_id = mFirebaseRemoteConfig.getString("mopub_banner_unit_id");
-                mopub_interstitial_unit_id = mFirebaseRemoteConfig.getString("mopub_interstitial_unit_id");
-
-                if (!purchased) {
-                    fbAdview();
-                }
-            }
-            else {
-
-                mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
-                mFirebaseRemoteConfig.setDefaultsAsync(R.xml.remote_config_defaults);
-                mFirebaseRemoteConfig.fetchAndActivate()
-                        .addOnCompleteListener(this, new OnCompleteListener<Boolean>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Boolean> task) {
-                                if (task.isSuccessful()) {
-                                    boolean updated = task.getResult();
-                                    Log.d(TAG, "Config params updated: " + updated);
-                                    Log.i(TAG, "Fetch and activate succeeded");
-                                    //Toast.makeText(InAppBillingActivity.this, "Fetch and activate succeeded",Toast.LENGTH_SHORT).show();
-
-                                    banner_ad_unit_id = mFirebaseRemoteConfig.getString("banner_ad_unit_id");
-                                    native_ad_unit_id = mFirebaseRemoteConfig.getString("native_ad_unit_id");
-                                    interstitial_ad_unit_id = mFirebaseRemoteConfig.getString("interstitial_ad_unit_id");
-                                    fbbanner_unit_id = mFirebaseRemoteConfig.getString("fbbanner_unit_id");
-                                    fbinterstitial_unit_id = mFirebaseRemoteConfig.getString("fbinterstitial_unit_id");
-                                    fbnative_unit_id = mFirebaseRemoteConfig.getString("fbnative_unit_id");
-                                    mopub_banner_unit_id = mFirebaseRemoteConfig.getString("mopub_banner_unit_id");
-                                    mopub_interstitial_unit_id = mFirebaseRemoteConfig.getString("mopub_interstitial_unit_id");
-
-                                    SharedPreferences.Editor edit = prefs.edit();
-                                    edit.putString("interstitial_ad_unit_id", interstitial_ad_unit_id);
-                                    edit.commit();
-
-                                    edit.putString("fbinterstitial_unit_id", fbinterstitial_unit_id);
-                                    edit.commit();
-
-                                    edit.putString("fbnative_unit_id", fbnative_unit_id);
-                                    edit.commit();
-
-
-                                } else {
-                                    //Toast.makeText(InAppBillingActivity.this, "Fetch failed",Toast.LENGTH_SHORT).show();
-                                    Log.i(TAG, "Fetch failed");
-                                }
-                                //Toast.makeText(InAppBillingActivity.this, Interstitial_unit_id,Toast.LENGTH_SHORT).show();
-
-                                Log.i(TAG, "app_unit_id " + app_unit_id);
-                                Log.i(TAG, "banner_ad_unit_id " + banner_ad_unit_id);
-                                Log.i(TAG, "native_ad_unit_id " + native_ad_unit_id);
-                                Log.i(TAG, "interstitial_ad_unit_id " + interstitial_ad_unit_id);
-                                Log.i(TAG, "fbbanner_unit_id " + fbbanner_unit_id);
-                                Log.i(TAG, "fbinterstitial_unit_id " + fbinterstitial_unit_id);
-                                Log.i(TAG, "fbnative_unit_id " + fbnative_unit_id);
-                                Log.i(TAG, "mopub_banner_unit_id " + mopub_banner_unit_id);
-                                Log.i(TAG, "mopub_interstitial_unit_id " + mopub_interstitial_unit_id);
-
-
-
-
-                                if (!purchased) {
-                                    fbAdview();
-                                }else{
-                                    adView.setVisibility(View.GONE);
-                                }
-
-                            }
-                        });
-            }
-        }
-    }
-    public boolean isOnline() {
-        try {
-            ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext()
-                    .getSystemService(Context.CONNECTIVITY_SERVICE);
-
-            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-            connected = networkInfo != null && networkInfo.isAvailable() &&
-                    networkInfo.isConnected();
-            return connected;
-
-
-        } catch (Exception e) {
-            System.out.println("CheckConnectivity Exception: " + e.getMessage());
-            Log.v("connectivity", e.toString());
-        }
-        return connected;
-    }
-    public  void fbAdview(){
-
-        adView = new AdView(this, fbbanner_unit_id, AdSize.BANNER_HEIGHT_50);
-
-
-        // Find the Ad Container
-        LinearLayout adContainer = findViewById(R.id.banner_container);
-
-        // Add the ad view to your activity layout
-        adContainer.addView(adView);
-
-        // Request an ad
-        //  adView.loadAd();
-
-        AdListener adListener = new AdListener() {
-            @Override
-            public void onError(Ad ad, AdError adError) {
-                // Ad error callback
-                // Toast.makeText(MainActivity.this,"Error: " + adError.getErrorMessage(),Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onAdLoaded(Ad ad) {
-                // Ad loaded callback
-            }
-
-            @Override
-            public void onAdClicked(Ad ad) {
-                // Ad clicked callback
-            }
-
-            @Override
-            public void onLoggingImpression(Ad ad) {
-                // Ad impression logged callback
-            }
-        };
-
-        // Request an ad
-        adView.loadAd(adView.buildLoadAdConfig().withAdListener(adListener).build());
     }
 
-    /** Called when leaving the activity */
-    @Override
-    public void onPause() {
-
-        super.onPause();
-    }
-
-    /** Called when returning to the activity */
-    @Override
-    public void onResume() {
-        super.onResume();
-
-    }
-
-    /** Called before the activity is destroyed */
-    @Override
-    public void onDestroy() {
-        if (adView != null) {
-            adView.destroy();
-        }
-        super.onDestroy();
-    }
     @Override
     public void onColorSelection(@NonNull ColorChooserDialog dialog, @ColorInt int selectedColor) {
         switch (dialog.getTitle()) {
@@ -403,7 +200,7 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
                 return true;
             });
 
-            final ATEColorPreference primaryColorPref = (ATEColorPreference) findPreference("primary_color");
+            final ATEColorPreference primaryColorPref = findPreference("primary_color");
             final int primaryColor = ThemeStore.primaryColor(getActivity());
             primaryColorPref.setColor(primaryColor, ColorUtil.darkenColor(primaryColor));
             primaryColorPref.setOnPreferenceClickListener(preference -> {
@@ -416,7 +213,7 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
                 return true;
             });
 
-            final ATEColorPreference accentColorPref = (ATEColorPreference) findPreference("accent_color");
+            final ATEColorPreference accentColorPref = findPreference("accent_color");
             final int accentColor = ThemeStore.accentColor(getActivity());
             accentColorPref.setColor(accentColor, ColorUtil.darkenColor(accentColor));
             accentColorPref.setOnPreferenceClickListener(preference -> {
@@ -429,7 +226,7 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
                 return true;
             });
 
-            TwoStatePreference colorNavBar = (TwoStatePreference) findPreference("should_color_navigation_bar");
+            TwoStatePreference colorNavBar = findPreference("should_color_navigation_bar");
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                 colorNavBar.setVisible(false);
             } else {
@@ -443,7 +240,7 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
                 });
             }
 
-            final TwoStatePreference classicNotification = (TwoStatePreference) findPreference("classic_notification");
+            final TwoStatePreference classicNotification = findPreference("classic_notification");
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
                 classicNotification.setVisible(false);
             } else {
@@ -455,7 +252,7 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
                 });
             }
 
-            final TwoStatePreference coloredNotification = (TwoStatePreference) findPreference("colored_notification");
+            final TwoStatePreference coloredNotification = findPreference("colored_notification");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 coloredNotification.setEnabled(PreferenceUtil.getInstance(getActivity()).classicNotification());
             } else {
@@ -467,7 +264,7 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
                 });
             }
 
-            final TwoStatePreference colorAppShortcuts = (TwoStatePreference) findPreference("should_color_app_shortcuts");
+            final TwoStatePreference colorAppShortcuts = findPreference("should_color_app_shortcuts");
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) {
                 colorAppShortcuts.setVisible(false);
             } else {
@@ -485,7 +282,6 @@ public class SettingsActivity extends AbsBaseActivity implements ColorChooserDia
 
             updateNowPlayingScreenSummary();
         }
-
 
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {

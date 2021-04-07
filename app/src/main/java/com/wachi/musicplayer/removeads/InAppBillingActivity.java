@@ -1,8 +1,6 @@
 package com.wachi.musicplayer.removeads;
 
 
-import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -105,7 +103,7 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
     private void setUpToolbar() {
         toolbar= findViewById(R.id.toolbar);
         toolbar.setBackgroundColor(ThemeStore.primaryColor(this));
-        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearace);
+        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearance);
         setSupportActionBar(toolbar);
         //noinspection ConstantConditions
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);

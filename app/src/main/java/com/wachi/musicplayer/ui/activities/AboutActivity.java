@@ -40,10 +40,10 @@ import de.psdev.licensesdialog.LicensesDialog;
 @SuppressWarnings("FieldCanBeLocal")
 public class AboutActivity extends AbsBaseActivity implements View.OnClickListener {
 
-    private static String GITHUB = "https://github.com/MaxFour/Music-Player";
+    private static final String GITHUB = "https://github.com/MaxFour/Music-Player";
 
-    private static String Paypal="https://www.paypal.com/";
-    private static String YandexMoney="https://money.yandex.ru/to/410015372205898";
+    private static final String Paypal = "https://www.paypal.com/";
+    private static final String YandexMoney = "https://money.yandex.ru/to/410015372205898";
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -89,7 +89,7 @@ public class AboutActivity extends AbsBaseActivity implements View.OnClickListen
 
     private void setUpToolbar() {
         toolbar.setBackgroundColor(ThemeStore.primaryColor(this));
-        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearace);
+        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearance);
         setSupportActionBar(toolbar);
         //noinspection ConstantConditions
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -140,7 +140,7 @@ public class AboutActivity extends AbsBaseActivity implements View.OnClickListen
             ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clipData = ClipData.newPlainText("Paypal", "michaelnyagwachi@gmail.com");
             clipboard.setPrimaryClip(clipData);
-            Toast.makeText(getApplicationContext(), R.string.paypal_mail_copied, Toast.LENGTH_LONG).show();
+            // Toast.makeText(getApplicationContext(), R.string.paypal_mail_copied, Toast.LENGTH_LONG).show();
         } else if (v == dollarButton) {
             ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clipData = ClipData.newPlainText("WMZ", "Z776114750889");
@@ -154,7 +154,7 @@ public class AboutActivity extends AbsBaseActivity implements View.OnClickListen
     private void showFeedbackDialog() {
         final Dialog dialog = new Dialog(this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // before
-        dialog.getContext().setTheme(ThemeStore.primaryColor(this));
+        dialog.getContext().setTheme(ThemeStore.primaryColorDark(this));
         dialog.setContentView(R.layout.dialog_feedback);
         dialog.setCancelable(false);
 

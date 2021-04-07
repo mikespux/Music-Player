@@ -27,7 +27,7 @@ import butterknife.Unbinder;
 
 public class AlbumCoverPagerAdapter extends CustomFragmentStatePagerAdapter {
 
-    private List<Song> dataSet;
+    private final List<Song> dataSet;
 
     private AlbumCoverFragment.ColorReceiver currentColorReceiver;
     private int currentColorReceiverPosition = -1;
@@ -126,7 +126,7 @@ public class AlbumCoverPagerAdapter extends CustomFragmentStatePagerAdapter {
         }
 
         private void loadAlbumCover() {
-            SongGlideRequest.Builder.from(Glide.with(getContext()), song)
+            SongGlideRequest.Builder.from(Glide.with(getActivity()), song)
                     .checkIgnoreMediaStore(getActivity())
                     .generatePalette(getActivity()).build()
                     .into(new MusicColoredTarget(albumCover) {

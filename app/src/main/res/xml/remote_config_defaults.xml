@@ -33,5 +33,14 @@
         <key>mopub_interstitial_unit_id</key>
         <value>24534e1901884e398f1253216226017e</value>
     </entry>
+    <entry>
+        <key>app_version</key>
+        <value>110</value>
+    </entry>
+    <entry>
+        <key>app_info</key>
+        <value>
+            <![CDATA[Thank you for downloading this<br><font color="red"><b>Music Player.</b></font>]]></value>
+    </entry>
 </defaultsMap>
 <!-- END xml_defaults -->

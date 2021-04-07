@@ -34,6 +34,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.kabouzeid.appthemehelper.ThemeStore;
 import com.kabouzeid.appthemehelper.common.ATHToolbarActivity;
 import com.kabouzeid.appthemehelper.util.ToolbarContentTintHelper;
+import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 import com.wachi.musicplayer.R;
 import com.wachi.musicplayer.adapter.SongFileAdapter;
 import com.wachi.musicplayer.helper.MusicPlayerRemote;
@@ -53,7 +54,6 @@ import com.wachi.musicplayer.util.MusicColorUtil;
 import com.wachi.musicplayer.util.PreferenceUtil;
 import com.wachi.musicplayer.util.ViewUtil;
 import com.wachi.musicplayer.views.BreadCrumbLayout;
-import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -180,7 +180,7 @@ public class FoldersFragment extends AbsMainActivityFragment implements MainActi
 
     private void setUpToolbar() {
         toolbar.setNavigationIcon(R.drawable.ic_menu_white_24dp);
-        toolbar.setTitleTextAppearance(getActivity().getApplicationContext(), R.style.ProductSansTextAppearace);
+        toolbar.setTitleTextAppearance(getActivity().getApplicationContext(), R.style.ProductSansTextAppearance);
         getActivity().setTitle(R.string.main_activity_name);
         getMainActivity().setSupportActionBar(toolbar);
     }
@@ -240,6 +240,7 @@ public class FoldersFragment extends AbsMainActivityFragment implements MainActi
     @Override
     public MaterialCab openCab(int menuRes, MaterialCab.Callback callback) {
         if (cab != null && cab.isActive()) cab.finish();
+        adapter.setColor(ThemeStore.primaryColor(getActivity()));
         cab = new MaterialCab(getMainActivity(), R.id.cab_stub)
                 .setMenu(menuRes)
                 .setCloseDrawableRes(R.drawable.ic_close_white_24dp)
@@ -477,7 +478,7 @@ public class FoldersFragment extends AbsMainActivityFragment implements MainActi
     }
 
     private static class AsyncFileLoader extends WrappedAsyncTaskLoader<List<File>> {
-        private WeakReference<FoldersFragment> fragmentWeakReference;
+        private final WeakReference<FoldersFragment> fragmentWeakReference;
 
         public AsyncFileLoader(FoldersFragment foldersFragment) {
             super(foldersFragment.getActivity());
@@ -505,8 +506,8 @@ public class FoldersFragment extends AbsMainActivityFragment implements MainActi
     }
 
     private static class ListSongsAsyncTask extends ListingFilesDialogAsyncTask<ListSongsAsyncTask.LoadingInfo, Void, List<Song>> {
-        private WeakReference<Context> contextWeakReference;
-        private WeakReference<OnSongsListedCallback> callbackWeakReference;
+        private final WeakReference<Context> contextWeakReference;
+        private final WeakReference<OnSongsListedCallback> callbackWeakReference;
         private final Object extra;
 
         public ListSongsAsyncTask(Context context, Object extra, OnSongsListedCallback callback) {
@@ -588,7 +589,7 @@ public class FoldersFragment extends AbsMainActivityFragment implements MainActi
     }
 
     public static class ArrayListPathsAsyncTask  extends ListingFilesDialogAsyncTask<ArrayListPathsAsyncTask .LoadingInfo, String, String[]> {
-        private WeakReference<OnPathsListedCallback> onPathsListedCallbackWeakReference;
+        private final WeakReference<OnPathsListedCallback> onPathsListedCallbackWeakReference;
 
         public ArrayListPathsAsyncTask(Context context, OnPathsListedCallback callback) {
             super(context, 500);
