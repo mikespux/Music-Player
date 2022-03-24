@@ -18,7 +18,6 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.text.Html;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,6 +26,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
@@ -38,14 +38,14 @@ import androidx.annotation.Nullable;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
+import com.applovin.mediation.MaxAd;
+import com.applovin.mediation.MaxAdListener;
+import com.applovin.mediation.MaxError;
+import com.applovin.mediation.ads.MaxInterstitialAd;
+import com.applovin.mediation.nativeAds.MaxNativeAdListener;
+import com.applovin.mediation.nativeAds.MaxNativeAdLoader;
+import com.applovin.mediation.nativeAds.MaxNativeAdView;
 import com.bumptech.glide.Glide;
-import com.facebook.ads.Ad;
-import com.facebook.ads.AdError;
-import com.facebook.ads.AdOptionsView;
-import com.facebook.ads.InterstitialAdListener;
-import com.facebook.ads.NativeAd;
-import com.facebook.ads.NativeAdLayout;
-import com.facebook.ads.NativeAdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -63,14 +63,7 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.kabouzeid.appthemehelper.ThemeStore;
 import com.kabouzeid.appthemehelper.util.ATHUtil;
 import com.kabouzeid.appthemehelper.util.NavigationViewUtil;
-import com.mopub.common.MoPub;
-import com.mopub.common.SdkConfiguration;
-import com.mopub.common.SdkInitializationListener;
-import com.mopub.common.logging.MoPubLog;
-import com.mopub.mobileads.MoPubErrorCode;
-import com.mopub.mobileads.MoPubInterstitial;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
-import com.wachi.musicplayer.BuildConfig;
 import com.wachi.musicplayer.R;
 import com.wachi.musicplayer.dialogs.ScanMediaFolderChooserDialog;
 import com.wachi.musicplayer.glide.SongGlideRequest;
@@ -93,12 +86,11 @@ import com.wachi.musicplayer.util.PreferenceUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import guy4444.smartrate.SmartRate;
-
-import static com.mopub.common.logging.MoPubLog.LogLevel.INFO;
 
 public class MainActivity extends AbsSlidingMusicPanelActivity {
 
@@ -125,11 +117,9 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
     View contentView;
 
     private com.google.android.gms.ads.InterstitialAd interstitialAd;
-    private com.facebook.ads.InterstitialAd fbinterstitialAd;
-    private MoPubInterstitial mInterstitial;
+    String applovin_native_unit_id = "";
+    String applovin_banner_unit_id = "", applovin_interstitial_unit_id = "";
 
-    SdkInitializationListener MopubListener;
-    SdkConfiguration.Builder configBuilder;
 
     private final FirebaseRemoteConfig mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
     FirebaseRemoteConfigSettings configSettings;
@@ -137,23 +127,24 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
     long cacheExpiration = 3600;
 
     String app_unit_id = "", banner_ad_unit_id = "", native_ad_unit_id = "", interstitial_ad_unit_id = "";
-    String fbbanner_unit_id = "", fbinterstitial_unit_id = "", fbnative_unit_id = "", mopub_banner_unit_id = "", mopub_interstitial_unit_id = "";
-    String app_version = "", app_info = "";
 
+    String app_version = "", app_info = "";
+    LinearLayout max_adplaceholder;
+    FrameLayout nativeAdContainer;
     // Find the Ad Container
     LinearLayout adContainer;
 
     private UnifiedNativeAd nativeAd;
     LinearLayout admob_adplaceholder;
+    private MaxInterstitialAd minterstitialAd;
+    private int retryAttempt;
+    private MaxNativeAdLoader nativeAdLoader;
+    private MaxAd mnativeAd;
 
-    private NativeAdLayout nativeAdLayout;
-    private NativeAd fbnativeAd;
-    LinearLayout fb_adplaceholder;
-    View fbadView;
 
     SharedPreferences prefs;
     Boolean purchased;
-    public static final String PURCHASE_KEY= "purchase";
+    public static final String PURCHASE_KEY = "purchase";
     boolean connected = false;
     boolean doubleBackToExitPressedOnce = false;
     TextView back_info;
@@ -230,9 +221,9 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         laughtCount = getlaughCount();
         if(laughtCount == 5){ showRateDialog();}
-        setLaughCount(laughtCount+1);
+        setLaughCount(laughtCount + 1);
         //Toast.makeText(MainActivity.this, String.valueOf(laughtCount),Toast.LENGTH_SHORT).show();
-        purchased=prefs.getBoolean(PURCHASE_KEY,false);
+        purchased = prefs.getBoolean(PURCHASE_KEY, false);
 
         back_info = contentView.findViewById(R.id.back_info);
         back_info.setBackgroundColor(ThemeStore.primaryColor(this));
@@ -240,15 +231,15 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         admob_adplaceholder = contentView.findViewById(R.id.admob_adplaceholder);
         admob_adplaceholder.setBackgroundColor(ThemeStore.primaryColor(this));
 
-        fb_adplaceholder = contentView.findViewById(R.id.fb_adplaceholder);
-        fb_adplaceholder.setBackgroundColor(ThemeStore.primaryColor(this));
+        max_adplaceholder = contentView.findViewById(R.id.max_adplaceholder);
+        max_adplaceholder.setBackgroundColor(ThemeStore.primaryColor(this));
 
 
         configSettings = new FirebaseRemoteConfigSettings.Builder()
                 .setMinimumFetchIntervalInSeconds(cacheExpiration)
                 .build();
 
-        if(isOnline()) {
+        if (isOnline()) {
             if (getResources().getString(R.string.ADS_VISIBILITY).equals("NO")) {
 
                 mFirebaseRemoteConfig.setConfigSettingsAsync(configSettings);
@@ -257,11 +248,9 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                 banner_ad_unit_id = mFirebaseRemoteConfig.getString("banner_ad_unit_id");
                 native_ad_unit_id = mFirebaseRemoteConfig.getString("native_ad_unit_id");
                 interstitial_ad_unit_id = mFirebaseRemoteConfig.getString("interstitial_ad_unit_id");
-                fbbanner_unit_id = mFirebaseRemoteConfig.getString("fbbanner_unit_id");
-                fbinterstitial_unit_id = mFirebaseRemoteConfig.getString("fbinterstitial_unit_id");
-                fbnative_unit_id = mFirebaseRemoteConfig.getString("fbnative_unit_id");
-                mopub_banner_unit_id = mFirebaseRemoteConfig.getString("mopub_banner_unit_id");
-                mopub_interstitial_unit_id = mFirebaseRemoteConfig.getString("mopub_interstitial_unit_id");
+                applovin_native_unit_id = mFirebaseRemoteConfig.getString("applovin_native_unit_id");
+                applovin_banner_unit_id = mFirebaseRemoteConfig.getString("applovin_banner_unit_id");
+                applovin_interstitial_unit_id = mFirebaseRemoteConfig.getString("applovin_interstitial_unit_id");
 
                 app_version = mFirebaseRemoteConfig.getString("app_version");
                 app_info = mFirebaseRemoteConfig.getString("app_info");
@@ -277,33 +266,15 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                     Log.i(TAG, "native_ad_unit_id " + native_ad_unit_id);
                     Log.i(TAG, "interstitial_ad_unit_id " + interstitial_ad_unit_id);
 
-                    Log.i(TAG, "fbbanner_unit_id " + fbbanner_unit_id);
-                    Log.i(TAG, "fbinterstitial_unit_id " + fbinterstitial_unit_id);
-                    Log.i(TAG, "fbnative_unit_id " + fbnative_unit_id);
-
-                    Log.i(TAG, "mopub_banner_unit_id " + mopub_banner_unit_id);
-                    Log.i(TAG, "mopub_interstitial_unit_id " + mopub_interstitial_unit_id);
+                    Log.i(TAG, "applovin_native_unit_id " + applovin_native_unit_id);
+                    Log.i(TAG, "applovin_banner_unit_id " + applovin_banner_unit_id);
+                    Log.i(TAG, "applovin_interstitial_unit_id " + applovin_interstitial_unit_id);
 
                     adview();
                     refreshAd();
-                    loadNativeAd();
+                    createNativeAd();
                     AdmobInterstitial();
-                    FbInterstitial();
-                    // MediationTestSuite.launch(this);
-                    configBuilder = new SdkConfiguration.Builder(mopub_interstitial_unit_id);
-                    if (BuildConfig.DEBUG) {
-                        configBuilder.withLogLevel(MoPubLog.LogLevel.DEBUG)
-                                .withLegitimateInterestAllowed(false)
-                                .build();
-                    } else {
-                        configBuilder.withLogLevel(INFO);
-                    }
-                    MopubListener = () -> {
-                        Log.d("MoPub", "SDK initialized");
-                        MopubInterstitial();
-                    };
-                    SampleActivityUtils.addDefaultNetworkConfiguration(configBuilder);
-                    MoPub.initializeSdk(this, configBuilder.build(), MopubListener);
+                    ApplovinInterstitial();
                 }
             }
             else {
@@ -322,29 +293,18 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                                 native_ad_unit_id = mFirebaseRemoteConfig.getString("native_ad_unit_id");
                                 interstitial_ad_unit_id = mFirebaseRemoteConfig.getString("interstitial_ad_unit_id");
 
-                                fbbanner_unit_id = mFirebaseRemoteConfig.getString("fbbanner_unit_id");
-                                fbinterstitial_unit_id = mFirebaseRemoteConfig.getString("fbinterstitial_unit_id");
-                                fbnative_unit_id = mFirebaseRemoteConfig.getString("fbnative_unit_id");
-
-                                mopub_banner_unit_id = mFirebaseRemoteConfig.getString("mopub_banner_unit_id");
-                                mopub_interstitial_unit_id = mFirebaseRemoteConfig.getString("mopub_interstitial_unit_id");
-
+                                applovin_native_unit_id = mFirebaseRemoteConfig.getString("applovin_native_unit_id");
+                                applovin_banner_unit_id = mFirebaseRemoteConfig.getString("applovin_banner_unit_id");
+                                applovin_interstitial_unit_id = mFirebaseRemoteConfig.getString("applovin_interstitial_unit_id");
 
                                 app_version = mFirebaseRemoteConfig.getString("app_version");
                                 app_info = mFirebaseRemoteConfig.getString("app_info");
 
                                 SharedPreferences.Editor edit = prefs.edit();
                                 edit.putString("interstitial_ad_unit_id", interstitial_ad_unit_id);
-                                edit.commit();
-
-                                edit.putString("fbinterstitial_unit_id", fbinterstitial_unit_id);
-                                edit.commit();
-
-                                edit.putString("fbnative_unit_id", fbnative_unit_id);
-                                edit.commit();
-
-                                edit.putString("mopub_interstitial_unit_id", mopub_interstitial_unit_id);
-                                edit.commit();
+                                edit.putString("applovin_native_unit_id", applovin_native_unit_id);
+                                edit.putString("applovin_interstitial_unit_id", applovin_interstitial_unit_id);
+                                edit.apply();
                             } else {
                                 //Toast.makeText(InAppBillingActivity.this, "Fetch failed",Toast.LENGTH_SHORT).show();
                                 Log.i(TAG, "Fetch failed");
@@ -355,12 +315,9 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                             Log.i(TAG, "native_ad_unit_id " + native_ad_unit_id);
                             Log.i(TAG, "interstitial_ad_unit_id " + interstitial_ad_unit_id);
 
-                            Log.i(TAG, "fbbanner_unit_id " + fbbanner_unit_id);
-                            Log.i(TAG, "fbinterstitial_unit_id " + fbinterstitial_unit_id);
-                            Log.i(TAG, "fbnative_unit_id " + fbnative_unit_id);
-
-                            Log.i(TAG, "mopub_banner_unit_id " + mopub_banner_unit_id);
-                            Log.i(TAG, "mopub_interstitial_unit_id " + mopub_interstitial_unit_id);
+                            Log.i(TAG, "applovin_native_unit_id " + applovin_native_unit_id);
+                            Log.i(TAG, "applovin_banner_unit_id " + applovin_banner_unit_id);
+                            Log.i(TAG, "applovin_interstitial_unit_id " + applovin_interstitial_unit_id);
 
                             adContainer = contentView.findViewById(R.id.banner_container);
                             adView = new AdView(getApplicationContext());
@@ -372,23 +329,9 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                             if (!purchased) {
                                 adview();
                                 refreshAd();
-                                loadNativeAd();
+                                createNativeAd();
                                 AdmobInterstitial();
-                                FbInterstitial();
-                                configBuilder = new SdkConfiguration.Builder(mopub_interstitial_unit_id);
-                                if (BuildConfig.DEBUG) {
-                                    configBuilder.withLogLevel(MoPubLog.LogLevel.DEBUG)
-                                            .withLegitimateInterestAllowed(false)
-                                            .build();
-                                } else {
-                                    configBuilder.withLogLevel(INFO);
-                                }
-                                MopubListener = () -> {
-                                    Log.d("MoPub", "SDK initialized");
-                                    MopubInterstitial();
-                                };
-                                SampleActivityUtils.addDefaultNetworkConfiguration(configBuilder);
-                                MoPub.initializeSdk(MainActivity.this, configBuilder.build(), MopubListener);
+                                ApplovinInterstitial();
 
                             } else {
                                 adView.setVisibility(View.GONE);
@@ -449,6 +392,16 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         alertDialog.show();
     }
 
+    public boolean isPrimeNumber(int number) {
+
+        for (int i = 2; i <= number / 2; i++) {
+            if (number % i == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void onBackPressed() {
         laughtCount = getlaughCount();
         if (laughtCount == 5) {
@@ -467,23 +420,39 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
 
             purchased = prefs.getBoolean(PURCHASE_KEY, false);
             if (!purchased) {
-                if (nativeAd != null) {
-                    admob_adplaceholder.setVisibility(View.VISIBLE);
-                    return;
-                } else {
-                    if (fbnativeAd != null && fbnativeAd.isAdLoaded()) {
-                        fb_adplaceholder.setVisibility(View.VISIBLE);
-                        return;
-                    }
-                    else{
-                        back_info.setVisibility(View.VISIBLE);
-                    }
-                }
+                if (laughtCount > 5) {
+                    if (isPrimeNumber(laughtCount)) {
+                        if (nativeAdLoader != null) {
+                            max_adplaceholder.setVisibility(View.VISIBLE);
+                            return;
+                        } else {
+                            if (nativeAd != null) {
+                                admob_adplaceholder.setVisibility(View.VISIBLE);
+                                return;
+                            }
+                        }
+                    } else {
 
+                        if (nativeAd != null) {
+                            admob_adplaceholder.setVisibility(View.VISIBLE);
+                            return;
+                        } else {
+                            if (nativeAdLoader != null) {
+                                max_adplaceholder.setVisibility(View.VISIBLE);
+                                return;
+                            } else {
+                                back_info.setVisibility(View.VISIBLE);
+                            }
+                        }
+
+                    }
+                } else {
+                    back_info.setVisibility(View.VISIBLE);
+                }
             }
             else {
                 admob_adplaceholder.setVisibility(View.GONE);
-                fb_adplaceholder.setVisibility(View.GONE);
+                max_adplaceholder.setVisibility(View.GONE);
             }
 
         }
@@ -494,7 +463,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
 
         this.doubleBackToExitPressedOnce = true;
         //Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-        if (nativeAd == null||fbnativeAd == null) {
+        if (nativeAd == null) {
             back_info.setVisibility(View.VISIBLE);
         }
         new Handler().postDelayed(new Runnable() {
@@ -502,7 +471,6 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
             @Override
             public void run() {
                 doubleBackToExitPressedOnce = false;
-
             }
         }, 2000);
 
@@ -523,72 +491,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         // Start loading the ad in the background.
         adView.loadAd(adRequest);
     }
-    private void showMopubInterstitial() {
-        // Show the ad if it's ready. Otherwise toast and restart the game.
-        if (mInterstitial != null && mInterstitial.isReady()) {
-            mInterstitial.show();
-        } else {
-            showAdmobInterstitial();
-            // Caching is likely already in progress if `isReady()` is false.
-            // Avoid calling `load()` here and instead rely on the callbacks as suggested below.
-            //Toast.makeText(this, "Ad did not load", Toast.LENGTH_SHORT).show();
-        }
-    }
 
-    public void  MopubInterstitial(){
-        // Instantiate an InterstitialAd object.
-        // NOTE: the placement ID will eventually identify this as your App, you can ignore it for
-        // now, while you are testing and replace it later when you have signed up.
-        // While you are using this temporary code you will only get test ads and if you release
-        // your code like this to the Google Play your users will not receive ads (you will get a no fill error).
-        if(mopub_interstitial_unit_id.equals("")||mopub_interstitial_unit_id.equals(null)) {
-            mopub_interstitial_unit_id = prefs.getString("mopub_interstitial_unit_id", "");
-            //Log.i("fbinterstitial_unit_id", fbinterstitial_unit_id);
-        }
-        mInterstitial = new MoPubInterstitial(this, mopub_interstitial_unit_id);
-
-        // Create listeners for the Interstitial Ad
-        MoPubInterstitial.InterstitialAdListener interstitialAdListener = new MoPubInterstitial.InterstitialAdListener() {
-            // InterstitialAdListener methods
-            @Override
-            public void onInterstitialLoaded(MoPubInterstitial interstitial) {
-                // The interstitial has been cached and is ready to be shown.
-            }
-
-            @Override
-            public void onInterstitialFailed(MoPubInterstitial interstitial, MoPubErrorCode errorCode) {
-                // The interstitial has failed to load. Inspect errorCode for additional information.
-                Log.e(TAG, "MoPubInterstitial ad failed to load: " + errorCode.toString());
-            }
-
-            @Override
-            public void onInterstitialShown(MoPubInterstitial interstitial) {
-                // The interstitial has been shown. Pause / save state accordingly.
-            }
-
-            @Override
-            public void onInterstitialClicked(MoPubInterstitial interstitial) {}
-
-            @Override
-            public void onInterstitialDismissed(MoPubInterstitial interstitial) {
-                // The interstitial has being dismissed. Resume / load state accordingly.
-            }
-        };
-
-        // For auto play video ads, it's recommended to load the ad
-        // at least 30 seconds before it is shown
-        if (mopub_interstitial_unit_id != null) {
-            try {
-                mInterstitial.setInterstitialAdListener(interstitialAdListener);
-                mInterstitial.load();
-
-                //	Log.e(TAG, "Interstitial ad Loaded.");
-            } catch (Throwable e) {
-                // Do nothing, just skip and wait for ad loading
-            }
-        }
-
-    }
 
     private void showAdmobInterstitial() {
         // Show the ad if it's ready. Otherwise toast and restart the game.
@@ -596,82 +499,90 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
             interstitialAd.show();
         } else {
             //Toast.makeText(this, "Ad did not load", Toast.LENGTH_SHORT).show();
-            showFbInterstitial();
+            showApplovinInterstitial();
         }
     }
-    private void showFbInterstitial() {
+
+    private void showApplovinInterstitial() {
         // Show the ad if it's ready. Otherwise toast and restart the game.
-        if (fbinterstitialAd != null && fbinterstitialAd.isAdLoaded()) {
-            fbinterstitialAd.show();
+        if (minterstitialAd != null && minterstitialAd.isReady()) {
+            minterstitialAd.showAd();
         } else {
-            //Toast.makeText(this, "Ad did not load", Toast.LENGTH_SHORT).show();
 
+            //showAdmobInterstitial();
+            // Caching is likely already in progress if `isReady()` is false.
+            // Avoid calling `load()` here and instead rely on the callbacks as suggested below.
+            //Toast.makeText(this, "Ad did not load", Toast.LENGTH_SHORT).show();
         }
     }
 
-    public void  FbInterstitial(){
+    public void ApplovinInterstitial() {
         // Instantiate an InterstitialAd object.
         // NOTE: the placement ID will eventually identify this as your App, you can ignore it for
         // now, while you are testing and replace it later when you have signed up.
         // While you are using this temporary code you will only get test ads and if you release
         // your code like this to the Google Play your users will not receive ads (you will get a no fill error).
-        if(fbinterstitial_unit_id.equals("")||fbinterstitial_unit_id.equals(null)) {
-            fbinterstitial_unit_id = prefs.getString("fbinterstitial_unit_id", "");
-            //Log.i("fbinterstitial_unit_id", fbinterstitial_unit_id);
+        if (applovin_interstitial_unit_id.equals("")) {
+            applovin_interstitial_unit_id = prefs.getString("applovin_interstitial_unit_id", "");
         }
-        fbinterstitialAd = new com.facebook.ads.InterstitialAd(this, fbinterstitial_unit_id);
-        //	interstitialAd = new InterstitialAd(this,"IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID");
-        //interstitialAd = new InterstitialAd(this,  getResources().getString(R.string.fbinterstitial_unit_id));
-        // Create listeners for the Interstitial Ad
-        InterstitialAdListener interstitialAdListener = new InterstitialAdListener() {
+
+        minterstitialAd = new MaxInterstitialAd(applovin_interstitial_unit_id, this);
+
+        MaxAdListener mlistener = new MaxAdListener() {
             @Override
-            public void onInterstitialDisplayed(Ad ad) {
-                // Interstitial ad displayed callback
-                Log.e(TAG, "Facebook Interstitial ad displayed.");
+            public void onAdLoaded(MaxAd ad) {
+                // Interstitial ad is ready to be shown. interstitialAd.isReady() will now return 'true'
+
+                // Reset retry attempt
+                retryAttempt = 0;
             }
 
             @Override
-            public void onInterstitialDismissed(Ad ad) {
-                // Interstitial dismissed callback
-                Log.e(TAG, "Facebook Interstitial ad dismissed.");
-            }
-
-            @Override
-            public void onError(Ad ad, AdError adError) {
-                // Ad error callback
-                Log.e(TAG, "Facebook Interstitial ad failed to load: " + adError.getErrorMessage());
+            public void onAdDisplayed(MaxAd ad) {
 
             }
 
             @Override
-            public void onAdLoaded(Ad ad) {
-                // Interstitial ad is loaded and ready to be displayed
-                Log.d(TAG, "Facebook Interstitial ad is loaded and ready to be displayed!");
-                // Show the ad
-                //fbinterstitialAd.show();
+            public void onAdHidden(MaxAd ad) {
+                // Interstitial ad is hidden. Pre-load the next ad
+                minterstitialAd.loadAd();
+            }
+
+            @Override
+            public void onAdClicked(MaxAd ad) {
 
             }
 
             @Override
-            public void onAdClicked(Ad ad) {
-                // Ad clicked callback
-                Log.d(TAG, "Facebook Interstitial ad clicked!");
+            public void onAdLoadFailed(String adUnitId, MaxError error) {
+                // Interstitial ad failed to load
+                // We recommend retrying with exponentially higher delays up to a maximum delay (in this case 64 seconds)
+
+                retryAttempt++;
+                long delayMillis = TimeUnit.SECONDS.toMillis((long) Math.pow(2, Math.min(6, retryAttempt)));
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        minterstitialAd.loadAd();
+                    }
+                }, delayMillis);
             }
 
             @Override
-            public void onLoggingImpression(Ad ad) {
-                // Ad impression logged callback
-                Log.d(TAG, "Facebook Interstitial ad impression logged!");
+            public void onAdDisplayFailed(MaxAd ad, MaxError error) {
+                // Interstitial ad failed to display. We recommend loading the next ad
+                minterstitialAd.loadAd();
             }
         };
 
         // For auto play video ads, it's recommended to load the ad
         // at least 30 seconds before it is shown
-        if (fbinterstitialAd != null) {
+        if (applovin_interstitial_unit_id != null) {
             try {
-                fbinterstitialAd.loadAd(fbinterstitialAd.buildLoadAdConfig()
-                        .withAdListener(interstitialAdListener)
-                        .build());
+                minterstitialAd.setListener(mlistener);
+                minterstitialAd.loadAd();
+
                 //	Log.e(TAG, "Interstitial ad Loaded.");
             } catch (Throwable e) {
                 // Do nothing, just skip and wait for ad loading
@@ -696,12 +607,12 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         interstitialAd.setAdListener(new com.google.android.gms.ads.AdListener() {
             @Override
             public void onAdLoaded() {
-                //	Toast.makeText(InAppBillingActivity.this, "onAdLoaded()", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this, "onAdLoaded()", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onAdFailedToLoad(int errorCode) {
-                //Toast.makeText(InAppBillingActivity.this,"onAdFailedToLoad() with error code: " + errorCode,Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this,"onAdFailedToLoad() with error code: " + errorCode,Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -717,117 +628,62 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
     }
 
 
-    private void loadNativeAd(){
-        // Instantiate a NativeAd object.
-        // NOTE: the placement ID will eventually identify this as your App, you can ignore it for
-        // now, while you are testing and replace it later when you have signed up.
-        // While you are using this temporary code you will only get test ads and if you release
-        // your code like this to the Google Play your users will not receive ads (you will get a no fill error).
-        if(fbnative_unit_id.equals("")||fbnative_unit_id.equals(null)) {
-            fbnative_unit_id = prefs.getString("fbnative_unit_id", "");
-            //Log.i("fbinterstitial_unit_id", fbinterstitial_unit_id);
-        }
-        fbnativeAd = new NativeAd(this, fbnative_unit_id);
-
-        NativeAdListener nativeAdListener = new NativeAdListener() {
-            @Override
-            public void onMediaDownloaded(Ad ad) {
-                // Native ad finished downloading all assets
-                Log.e(TAG, "Native ad finished downloading all assets.");
-            }
-
-            @Override
-            public void onError(Ad ad, AdError adError) {
-                // Native ad failed to load
-                Log.e(TAG, "Native ad failed to load: " + adError.getErrorMessage());
-                fb_adplaceholder.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onAdLoaded(Ad ad) {
-                // Native ad is loaded and ready to be displayed
-                Log.d(TAG, "Native ad is loaded and ready to be displayed!");
-                if (fbnativeAd == null || fbnativeAd != ad) {
-                    return;
-                }
-                // Inflate Native Ad into Container
-                inflateAd(fbnativeAd);
-            }
-
-            @Override
-            public void onAdClicked(Ad ad) {
-                // Native ad clicked
-                Log.d(TAG, "Native ad clicked!");
-            }
-
-            @Override
-            public void onLoggingImpression(Ad ad) {
-                // Native ad impression
-                Log.d(TAG, "Native ad impression logged!");
-            }
-        };
-
-        // Request an ad
-        fbnativeAd.loadAd(fbnativeAd.buildLoadAdConfig()
-                .withAdListener(nativeAdListener)
-                .build());
-    }
-    private void inflateAd(NativeAd nativeAd) {
+    private void createNativeAd() {
         back_info.setVisibility(View.GONE);
+        nativeAdContainer = max_adplaceholder.findViewById(R.id.native_ad_layout);
 
-        fbnativeAd.unregisterView();
-        // Add the Ad view into the ad container.
-        nativeAdLayout = findViewById(R.id.native_ad_container);
-        LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
-        // Inflate the Ad view.  The layout referenced should be the one you created in the last step.
-        fbadView =inflater.inflate(R.layout.ad_fb_unified, nativeAdLayout, false);
-        nativeAdLayout.addView(fbadView);
+        if (applovin_native_unit_id.equals("") || applovin_native_unit_id.equals(null)) {
+            applovin_native_unit_id = prefs.getString("applovin_native_unit_id", "");
+            Log.i("applovin_native_unit_id", applovin_native_unit_id);
+        }
+        nativeAdLoader = new MaxNativeAdLoader(applovin_native_unit_id, this);
+        Log.i("applovin_native_unit_id", applovin_native_unit_id);
+        nativeAdLoader.setNativeAdListener(new MaxNativeAdListener() {
+            @Override
+            public void onNativeAdLoaded(final MaxNativeAdView nativeAdView, final MaxAd ad) {
+                Log.i("applovin_success", "Loaded");
+                // Clean up any pre-existing native ad to prevent memory leaks.
+                if (mnativeAd != null) {
+                    nativeAdLoader.destroy(mnativeAd);
+                }
 
-        Button btn_exit=fbadView.findViewById(R.id.btn_exit);
+                // Save ad for cleanup.
+                mnativeAd = ad;
+
+                // Add ad view to view.
+                nativeAdContainer.removeAllViews();
+                nativeAdContainer.addView(nativeAdView);
+            }
+
+            @Override
+            public void onNativeAdLoadFailed(final String adUnitId, final MaxError error) {
+                // We recommend retrying with exponentially higher delays up to a maximum delay
+                Log.i("applovin_fail", "Failed to Load");
+                Log.i("MaxError", adUnitId + ":" + error);
+            }
+
+            @Override
+            public void onNativeAdClicked(final MaxAd ad) {
+                // Optional click callback
+            }
+        });
+
+        nativeAdLoader.loadAd();
+
+        Button btn_exit = max_adplaceholder.findViewById(R.id.btn_exit);
         btn_exit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
-        Button btn_back=fbadView.findViewById(R.id.btn_back);
+        Button btn_back = max_adplaceholder.findViewById(R.id.btn_back);
         btn_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fb_adplaceholder.setVisibility(View.GONE);
+                max_adplaceholder.setVisibility(View.GONE);
             }
         });
-
-        // Add the AdOptionsView
-        LinearLayout adChoicesContainer = findViewById(R.id.ad_choices_container);
-        AdOptionsView adOptionsView = new AdOptionsView(MainActivity.this, nativeAd, nativeAdLayout);
-        adChoicesContainer.removeAllViews();
-        adChoicesContainer.addView(adOptionsView, 0);
-
-        // Create native UI using the ad metadata.
-        com.facebook.ads.MediaView nativeAdIcon = fbadView.findViewById(R.id.native_ad_icon);
-        TextView nativeAdTitle = fbadView.findViewById(R.id.native_ad_title);
-        com.facebook.ads.MediaView nativeAdMedia = fbadView.findViewById(R.id.native_ad_media);
-        TextView nativeAdSocialContext = fbadView.findViewById(R.id.native_ad_social_context);
-        TextView nativeAdBody = fbadView.findViewById(R.id.native_ad_body);
-        TextView sponsoredLabel = fbadView.findViewById(R.id.native_ad_sponsored_label);
-        Button nativeAdCallToAction = fbadView.findViewById(R.id.native_ad_call_to_action);
-
-        // Set the Text.
-        nativeAdTitle.setText(fbnativeAd.getAdvertiserName());
-        nativeAdBody.setText(fbnativeAd.getAdBodyText());
-        nativeAdSocialContext.setText(fbnativeAd.getAdSocialContext());
-        nativeAdCallToAction.setVisibility(fbnativeAd.hasCallToAction() ? View.VISIBLE : View.INVISIBLE);
-        nativeAdCallToAction.setText(fbnativeAd.getAdCallToAction());
-        sponsoredLabel.setText(fbnativeAd.getSponsoredTranslation());
-
-        // Create a list of clickable views
-        List<View> clickableViews = new ArrayList<>();
-        clickableViews.add(nativeAdTitle);
-        clickableViews.add(nativeAdCallToAction);
-
-        // Register the Title and CTA button to listen for clicks.
-        fbnativeAd.registerViewForInteraction(fbadView, nativeAdMedia, nativeAdIcon, clickableViews);
     }
 
 
@@ -1045,11 +901,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                 banner_ad_unit_id = mFirebaseRemoteConfig.getString("banner_ad_unit_id");
                 native_ad_unit_id = mFirebaseRemoteConfig.getString("native_ad_unit_id");
                 interstitial_ad_unit_id = mFirebaseRemoteConfig.getString("interstitial_ad_unit_id");
-                fbbanner_unit_id = mFirebaseRemoteConfig.getString("fbbanner_unit_id");
-                fbinterstitial_unit_id = mFirebaseRemoteConfig.getString("fbinterstitial_unit_id");
-                fbnative_unit_id = mFirebaseRemoteConfig.getString("fbnative_unit_id");
-                mopub_banner_unit_id = mFirebaseRemoteConfig.getString("mopub_banner_unit_id");
-                mopub_interstitial_unit_id = mFirebaseRemoteConfig.getString("mopub_interstitial_unit_id");
+                applovin_native_unit_id = mFirebaseRemoteConfig.getString("applovin_native_unit_id");
 
 
                 if (adView != null) {
@@ -1058,10 +910,9 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                 interstitialAd = new com.google.android.gms.ads.InterstitialAd(this);
 
                 AdmobInterstitial();
-                FbInterstitial();
-                MopubInterstitial();
+                ApplovinInterstitial();
                 refreshAd();
-                loadNativeAd();
+
 
 
                 //Toast.makeText(MainActivity.this, String.valueOf(purchased),Toast.LENGTH_SHORT).show();
@@ -1089,11 +940,8 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                     nativeAd.destroy();
                 }
 
-                if (fbinterstitialAd != null) {
-                    fbinterstitialAd.destroy();
-                }
-                if (fbnativeAd != null) {
-                    fbnativeAd.destroy();
+                if (minterstitialAd != null) {
+                    minterstitialAd.destroy();
                 }
 
             }
@@ -1127,7 +975,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                     if(isOnline()){
                         if (!purchased) {
                             if(laughtCount > 6) {
-                                showMopubInterstitial();
+                                showApplovinInterstitial();
                             }
                         }
                     }
@@ -1160,7 +1008,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                     if(isOnline()){
                         if (!purchased) {
                             if(laughtCount > 6) {
-                                showMopubInterstitial();
+                                showApplovinInterstitial();
                             }
                         }
                     }

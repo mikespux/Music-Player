@@ -4,7 +4,9 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
+import com.applovin.sdk.AppLovinSdk;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.AudienceNetworkAds;
 import com.google.android.gms.ads.MobileAds;
@@ -40,6 +42,12 @@ public class App extends Application {
         });
         AdSettings.addTestDevice("22a02ff6-199e-4732-9280-3c7579d78a7b");
         AdSettings.addTestDevice("00acc125-7dc6-427a-8781-1d5af92258e7");
+        // Initialize the AppLovin SDK
+        AppLovinSdk.getInstance(this).setMediationProvider("max");
+        AppLovinSdk.initializeSdk(this, configuration -> {
+            Log.i("AppLovin Max", "SDK initialized");
+            // AppLovin SDK is initialized, start loading ads
+        });
     }
     public void setThemePrefs(final String theme) {
         final SharedPreferences.Editor editor = prefs.edit();

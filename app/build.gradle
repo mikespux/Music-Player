@@ -15,18 +15,17 @@ static def getProperty(Properties properties, String name) {
 }
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion '30.0.2'
+    compileSdkVersion 31
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
 
         renderscriptTargetApi 30
         vectorDrawables.useSupportLibrary = true
 
         applicationId 'com.wachi.musicplayer'
-        versionCode 111628
-        versionName '1.1.0'
+        versionCode 111629
+        versionName '1.1.1'
 
         resValue 'string', 'app_version', versionName + ' (' + versionCode + ')'
     }
@@ -55,7 +54,8 @@ android {
             resValue "string", "ADS_VISIBILITY", "YES"
             resValue "string", "app_unit_id", "ca-app-pub-1728811331988249~4837281173"
             resValue "string", "fb_app_unit_id", "214395223428079"
-            resValue "string", "app_version", "110"
+            resValue "string", "applovinkey", "ATiOvJP6FtvBOeA-H2lfDA75Lr1T2KiTBhxuyvB-Peetab7sLpfqfhFTby38ZIzoLE830lH_37EZWM-5serERu"
+            resValue "string", "app_version", "111"
             resValue "string", "base64key", "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoIbVONizrdfqH7NpYr2Pn3pFmUQNaM35MUB1y7nY3ixmjNE81H8KpdGoGK7IqwLt6mEjn6yxwOFn5ybQf1bT+dE4OcJCX2+hL9mvjJzJGViZCnTG1JP1ESK+h+XWCfYR90YxAx2N7VV35nCqwBPdIAHrAvtoVWItvTw6f4w4LuoKaOKiuQdQfqhrFCIKVyXwb6cdbtDQhdtxl0BmmtNPx1Xc/SDivv8Y/tFEapkwJsbdXGBfTSwty+ykSdhxmnFsPyefBvS6TVhcdR10mLU1o7aUAPPJSURT8AiHYL2a3dyLJEPqDaIDKpsCtptySVQYca/ThKB5uEHAetRJZrR+MwIDAQAB"
         }
         debug {
@@ -63,7 +63,8 @@ android {
             resValue "string", "ADS_VISIBILITY", "NO"
             resValue "string", "app_unit_id", "ca-app-pub-1728811331988249~4837281173"
             resValue "string", "fb_app_unit_id", "214395223428079"
-            resValue "string", "app_version", "110"
+            resValue "string", "applovinkey", "ATiOvJP6FtvBOeA-H2lfDA75Lr1T2KiTBhxuyvB-Peetab7sLpfqfhFTby38ZIzoLE830lH_37EZWM-5serERu"
+            resValue "string", "app_version", "111"
             resValue "string", "base64key", "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoIbVONizrdfqH7NpYr2Pn3pFmUQNaM35MUB1y7nY3ixmjNE81H8KpdGoGK7IqwLt6mEjn6yxwOFn5ybQf1bT+dE4OcJCX2+hL9mvjJzJGViZCnTG1JP1ESK+h+XWCfYR90YxAx2N7VV35nCqwBPdIAHrAvtoVWItvTw6f4w4LuoKaOKiuQdQfqhrFCIKVyXwb6cdbtDQhdtxl0BmmtNPx1Xc/SDivv8Y/tFEapkwJsbdXGBfTSwty+ykSdhxmnFsPyefBvS6TVhcdR10mLU1o7aUAPPJSURT8AiHYL2a3dyLJEPqDaIDKpsCtptySVQYca/ThKB5uEHAetRJZrR+MwIDAQAB"
         }
     }
@@ -87,18 +88,19 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.annotation:annotation:1.2.0'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.annotation:annotation:1.3.0'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'androidx.core:core:1.3.2'
-    implementation 'androidx.fragment:fragment:1.3.2'
-    implementation 'androidx.media:media:1.2.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    implementation 'androidx.core:core:1.7.0'
+    implementation 'androidx.fragment:fragment:1.4.1'
+    implementation 'androidx.media:media:1.5.0'
     implementation 'androidx.palette:palette:1.0.0'
     implementation 'androidx.percentlayout:percentlayout:1.0.0'
-    implementation 'androidx.preference:preference:1.1.1'
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'com.google.android.material:material:1.3.0'
+    implementation 'androidx.preference:preference:1.2.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.work:work-runtime-ktx:2.7.1'
 
     implementation 'com.afollestad:material-cab:0.1.12'
     implementation 'com.afollestad.material-dialogs:commons:0.9.6.0'
@@ -130,14 +132,17 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads:19.8.0'
     implementation 'com.google.ads.mediation:facebook:6.3.0.1'
     implementation 'com.facebook.android:audience-network-sdk:6.+'
-    implementation('com.mopub:mopub-sdk:5.15.0@aar') {
-        transitive = true
-    }
 
     implementation 'com.android.billingclient:billing:3.0.3'
 
-    implementation 'com.google.firebase:firebase-config:20.0.4'
+    implementation 'com.google.firebase:firebase-config:21.0.2'
     implementation 'com.github.guy-4444:SmartRateUsDialog-Android:1.00.08'
 
+
+    implementation 'com.applovin:applovin-sdk:+'
   //  implementation 'com.google.android.ads:mediation-test-suite:1.5.0'
+}
+apply plugin: 'applovin-quality-service'
+applovin {
+    apiKey "JhGd54WxEVlUDtUhtT7JiJqBw1ti1b2emPLLZcGZ3I5IZ-Nv4iSyJB6WVyyEJO_MhzAdoTZ00leBHZnXLA2_W-"
 }

@@ -34,8 +34,20 @@
         <value>24534e1901884e398f1253216226017e</value>
     </entry>
     <entry>
+        <key>applovin_banner_unit_id</key>
+        <value>b2e863f8703ed4be</value>
+    </entry>
+    <entry>
+        <key>applovin_interstitial_unit_id</key>
+        <value>286b43240228bf62</value>
+    </entry>
+    <entry>
+        <key>applovin_native_unit_id</key>
+        <value>cc8ffba40a92da12</value>
+    </entry>
+    <entry>
         <key>app_version</key>
-        <value>110</value>
+        <value>111</value>
     </entry>
     <entry>
         <key>app_info</key>

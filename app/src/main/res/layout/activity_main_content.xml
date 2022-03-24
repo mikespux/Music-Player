@@ -39,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/back_again"
-                android:textColor="@color/white"
+                android:textColor="@color/md_white_1000"
                 android:textSize="18sp"
                 android:visibility="gone" />
 
@@ -71,13 +71,13 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/fb_adplaceholder"
+            android:id="@+id/max_adplaceholder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
             android:layout_gravity="bottom|center_horizontal"
-            android:orientation="vertical"
+            android:layout_alignParentBottom="true"
             android:padding="12dp"
+            android:orientation="vertical"
             android:visibility="gone">
 
 
@@ -86,8 +86,8 @@
                 android:layout_height="match_parent">
 
                 <include
-                    android:id="@+id/native_ad_container"
                     layout="@layout/ad_fb_unified"
+                    android:id="@+id/native_ad_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@android:color/white"

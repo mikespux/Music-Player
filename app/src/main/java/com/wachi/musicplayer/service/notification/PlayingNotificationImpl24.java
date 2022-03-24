@@ -1,5 +1,10 @@
 package com.wachi.musicplayer.service.notification;
 
+import static com.wachi.musicplayer.service.MusicService.ACTION_REWIND;
+import static com.wachi.musicplayer.service.MusicService.ACTION_SKIP;
+import static com.wachi.musicplayer.service.MusicService.ACTION_TOGGLE_FAVORITE;
+import static com.wachi.musicplayer.service.MusicService.ACTION_TOGGLE_PAUSE;
+
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -25,11 +30,6 @@ import com.wachi.musicplayer.ui.activities.MainActivity;
 import com.wachi.musicplayer.util.MusicUtil;
 import com.wachi.musicplayer.util.PreferenceUtil;
 
-import static com.wachi.musicplayer.service.MusicService.ACTION_REWIND;
-import static com.wachi.musicplayer.service.MusicService.ACTION_SKIP;
-import static com.wachi.musicplayer.service.MusicService.ACTION_TOGGLE_FAVORITE;
-import static com.wachi.musicplayer.service.MusicService.ACTION_TOGGLE_PAUSE;
-
 public class PlayingNotificationImpl24 extends PlayingNotification {
 
     @Override
@@ -48,12 +48,12 @@ public class PlayingNotificationImpl24 extends PlayingNotification {
 
         Intent action = new Intent(service, MainActivity.class);
         action.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        final PendingIntent clickIntent = PendingIntent.getActivity(service, 0, action, 0);
+        final PendingIntent clickIntent = PendingIntent.getActivity(service, 0, action, PendingIntent.FLAG_MUTABLE);
 
         final ComponentName serviceName = new ComponentName(service, MusicService.class);
         Intent intent = new Intent(MusicService.ACTION_QUIT);
         intent.setComponent(serviceName);
-        final PendingIntent deleteIntent = PendingIntent.getService(service, 0, intent, 0);
+        final PendingIntent deleteIntent = PendingIntent.getService(service, 0, intent, PendingIntent.FLAG_MUTABLE);
 
         final int bigNotificationImageSize = service.getResources().getDimensionPixelSize(R.dimen.notification_big_image_size);
         service.runOnUiThread(() -> SongGlideRequest.Builder.from(Glide.with(service), song)
@@ -118,6 +118,6 @@ public class PlayingNotificationImpl24 extends PlayingNotification {
         final ComponentName serviceName = new ComponentName(service, MusicService.class);
         Intent intent = new Intent(action);
         intent.setComponent(serviceName);
-        return PendingIntent.getService(service, 0, intent, 0);
+        return PendingIntent.getService(service, 0, intent, PendingIntent.FLAG_MUTABLE);
     }
 }
