@@ -1,7 +1,6 @@
 -keep class androidx.** { *; }
 -keep class android.support.multidex.** { *; }
 -keep class android.support.v4.app.** { *; }
--keep class com.google.android.gms.common.api.** { *; }
 -keep class com.google.android.gms.location.FusedLocationProviderApi { *; }
 -keep class com.google.android.gms.location.LocationListener { *; }
 -keep class io.fabric.sdk.android.** { *; }
@@ -20,7 +19,6 @@
 -keep class com.unity3d.ads.** { *; }
 -keep class com.unity3d.services.** { *; }
 -keep class com.mintegral.msdk.** { *; }
--keep class com.mbridge.msdk.** { *; }
 -keep class com.adcolony.sdk.** { *; }
 -keep class com.inmobi.** { *; }
 -keep class com.safedk.** { *; }

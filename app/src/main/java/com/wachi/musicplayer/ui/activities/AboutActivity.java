@@ -206,7 +206,37 @@ public class AboutActivity extends AbsBaseActivity implements View.OnClickListen
         dialog.show();
         dialog.getWindow().setAttributes(lp);
     }
+
     private void requestFeature() {
+        try {
+            Intent email = new Intent(Intent.ACTION_SENDTO);
+            email.setData(Uri.parse("mailto:"));
+            email.putExtra(Intent.EXTRA_EMAIL, new String[]{"michaelnyagwachi@gmail.com"});
+            email.putExtra(Intent.EXTRA_SUBJECT,
+                    "[" + getResources().getString(R.string.app_name)
+                            + "] " + getAppVersion(getApplicationContext())
+                            + " - " + getResources().getString(R.string.request)
+            );
+            email.putExtra(Intent.EXTRA_TEXT, feedback);
+
+            startActivity(Intent.createChooser(email, getResources().getString(R.string.send_email)));
+        } catch (android.content.ActivityNotFoundException ex) {
+            Intent email = new Intent(Intent.ACTION_SEND);
+            email.setType("message/rfc822");
+            email.putExtra(Intent.EXTRA_EMAIL, new String[]{"michaelnyagwachi@gmail.com"});
+            email.putExtra(Intent.EXTRA_SUBJECT,
+                    "[" + getResources().getString(R.string.app_name)
+                            + "] " + getAppVersion(getApplicationContext())
+                            + " - " + getResources().getString(R.string.request));
+            email.putExtra(Intent.EXTRA_TEXT, feedback);
+            Intent chooser = Intent.createChooser(email, getResources().getString(R.string.send_email));
+            chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(email);
+            Toast.makeText(AboutActivity.this, "Email not Found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void requestFeatureOld() {
         try {
             Intent email = new Intent(Intent.ACTION_SENDTO);
             email.setData(Uri.parse("mailto:"));
@@ -217,7 +247,7 @@ public class AboutActivity extends AbsBaseActivity implements View.OnClickListen
                 if (info.activityInfo.packageName.equals("com.google.android.gm")) {
                     className = info.activityInfo.name;
 
-                    if(className != null && !className.isEmpty()){
+                    if (className != null && !className.isEmpty()) {
                         break;
                     }
                 }

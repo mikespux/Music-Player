@@ -901,9 +901,11 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                 banner_ad_unit_id = mFirebaseRemoteConfig.getString("banner_ad_unit_id");
                 native_ad_unit_id = mFirebaseRemoteConfig.getString("native_ad_unit_id");
                 interstitial_ad_unit_id = mFirebaseRemoteConfig.getString("interstitial_ad_unit_id");
+                applovin_interstitial_unit_id = mFirebaseRemoteConfig.getString("applovin_interstitial_unit_id");
                 applovin_native_unit_id = mFirebaseRemoteConfig.getString("applovin_native_unit_id");
-
-
+                SharedPreferences.Editor edit = prefs.edit();
+                edit.putString("applovin_interstitial_unit_id", applovin_interstitial_unit_id);
+                edit.apply();
                 if (adView != null) {
                     adView.resume();
                 }
@@ -1279,7 +1281,37 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         dialog.show();
         dialog.getWindow().setAttributes(lp);
     }
+
     private void requestFeature() {
+        try {
+            Intent email = new Intent(Intent.ACTION_SENDTO);
+            email.setData(Uri.parse("mailto:"));
+            email.putExtra(Intent.EXTRA_EMAIL, new String[]{"michaelnyagwachi@gmail.com"});
+            email.putExtra(Intent.EXTRA_SUBJECT,
+                    "[" + getResources().getString(R.string.app_name)
+                            + "] " + getAppVersion(getApplicationContext())
+                            + " - " + getResources().getString(R.string.request)
+            );
+            email.putExtra(Intent.EXTRA_TEXT, feedback);
+
+            startActivity(Intent.createChooser(email, getResources().getString(R.string.send_email)));
+        } catch (android.content.ActivityNotFoundException ex) {
+            Intent email = new Intent(Intent.ACTION_SEND);
+            email.setType("message/rfc822");
+            email.putExtra(Intent.EXTRA_EMAIL, new String[]{"michaelnyagwachi@gmail.com"});
+            email.putExtra(Intent.EXTRA_SUBJECT,
+                    "[" + getResources().getString(R.string.app_name)
+                            + "] " + getAppVersion(getApplicationContext())
+                            + " - " + getResources().getString(R.string.request));
+            email.putExtra(Intent.EXTRA_TEXT, feedback);
+            Intent chooser = Intent.createChooser(email, getResources().getString(R.string.send_email));
+            chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(email);
+            Toast.makeText(MainActivity.this, "Email not Found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void requestFeatureOld() {
         try {
             Intent email = new Intent(Intent.ACTION_SENDTO);
             email.setData(Uri.parse("mailto:"));

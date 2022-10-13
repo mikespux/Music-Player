@@ -1,6 +1,8 @@
 package com.wachi.musicplayer.removeads;
 
 
+import static com.android.billingclient.api.BillingClient.SkuType.INAPP;
+
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -32,8 +34,6 @@ import com.wachi.musicplayer.ui.activities.base.AbsBaseActivity;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.android.billingclient.api.BillingClient.SkuType.INAPP;
 
 public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUpdatedListener {
 
@@ -210,8 +210,7 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
     void handlePurchases(List<Purchase>  purchases) {
         for(Purchase purchase:purchases) {
             //if item is purchased
-            if (PRODUCT_ID.equals(purchase.getSku()) && purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED)
-            {
+            if (PRODUCT_ID.equals(purchase.getSkus().get(0)) && purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
                 if (!verifyValidSignature(purchase.getOriginalJson(), purchase.getSignature())) {
                     // Invalid purchase
                     // show error to user
@@ -231,7 +230,7 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
                 else {
                     // Grant entitlement to the user on item purchase
                     // restart activity
-                    if(!getPurchaseValueFromPref()){
+                    if (!getPurchaseValueFromPref()) {
                         savePurchaseValueToPref(true);
                         Toast.makeText(getApplicationContext(), "Item Purchased", Toast.LENGTH_SHORT).show();
                         this.recreate();
@@ -239,14 +238,12 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
                 }
             }
             //if purchase is pending
-            else if( PRODUCT_ID.equals(purchase.getSku()) && purchase.getPurchaseState() == Purchase.PurchaseState.PENDING)
-            {
+            else if (PRODUCT_ID.equals(purchase.getSkus().get(0)) && purchase.getPurchaseState() == Purchase.PurchaseState.PENDING) {
                 Toast.makeText(getApplicationContext(),
                         "Purchase is Pending. Please complete Transaction", Toast.LENGTH_SHORT).show();
             }
             //if purchase is unknown
-            else if(PRODUCT_ID.equals(purchase.getSku()) && purchase.getPurchaseState() == Purchase.PurchaseState.UNSPECIFIED_STATE)
-            {
+            else if (PRODUCT_ID.equals(purchase.getSkus().get(0)) && purchase.getPurchaseState() == Purchase.PurchaseState.UNSPECIFIED_STATE) {
                 savePurchaseValueToPref(false);
                 purchaseStatus.setText("Purchase Status : Not Purchased");
                 purchaseButton.setVisibility(View.VISIBLE);
