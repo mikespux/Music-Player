@@ -24,9 +24,8 @@ import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.QueryPurchasesParams;
 import com.android.billingclient.api.SkuDetailsParams;
-import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.kabouzeid.appthemehelper.ThemeStore;
 import com.wachi.musicplayer.R;
 import com.wachi.musicplayer.ui.activities.base.AbsBaseActivity;
@@ -37,14 +36,59 @@ import java.util.List;
 
 public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUpdatedListener {
 
-    public static final String PURCHASE_KEY= "purchase";
-    public static final String PRODUCT_ID= "music_player_premium";
+    public static final String PURCHASE_KEY = "purchase";
+    public static final String PRODUCT_ID = "music_player_premium";
 
     TextView purchaseStatus;
     LinearLayout purchaseButton;
     Toolbar toolbar;
     private BillingClient billingClient;
 
+
+    AcknowledgePurchaseResponseListener ackPurchase = billingResult -> {
+        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+            //if purchase is acknowledged
+            // Grant entitlement to the user. and restart activity
+            savePurchaseValueToPref(true);
+            Toast.makeText(getApplicationContext(), "Item Purchased", Toast.LENGTH_SHORT).show();
+            InAppBillingActivity.this.recreate();
+        }
+    };
+
+    private void setUpToolbar() {
+        toolbar = findViewById(R.id.toolbar);
+        toolbar.setBackgroundColor(ThemeStore.primaryColor(this));
+        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearance);
+        setSupportActionBar(toolbar);
+        //noinspection ConstantConditions
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private SharedPreferences getPreferenceObject() {
+        return PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+    }
+
+    private SharedPreferences.Editor getPreferenceEditObject() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        return prefs.edit();
+    }
+
+    private boolean getPurchaseValueFromPref() {
+        return getPreferenceObject().getBoolean(PURCHASE_KEY, false);
+    }
+
+    private void savePurchaseValueToPref(boolean value) {
+        getPreferenceEditObject().putBoolean(PURCHASE_KEY, value).commit();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,8 +100,8 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
         setTaskDescriptionColorAuto();
         setUpToolbar();
         purchaseStatus= findViewById(R.id.purchase_status);
-        purchaseButton= findViewById(R.id.mBuyButton);
-        purchaseButton.setOnClickListener(v -> purchase(v));
+        purchaseButton = findViewById(R.id.mBuyButton);
+        purchaseButton.setOnClickListener(this::purchase);
 
 
         // Establish connection to billing client
@@ -67,8 +111,8 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
                 .enablePendingPurchases().setListener(this).build();
         billingClient.startConnection(new BillingClientStateListener() {
             @Override
-            public void onBillingSetupFinished(BillingResult billingResult) {
-                if(billingResult.getResponseCode()== BillingClient.BillingResponseCode.OK){
+            public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
+          /*      if(billingResult.getResponseCode()==BillingClient.BillingResponseCode.OK){
                     Purchase.PurchasesResult queryPurchase = billingClient.queryPurchases(INAPP);
                     List<Purchase> queryPurchases = queryPurchase.getPurchasesList();
                     if(queryPurchases!=null && queryPurchases.size()>0){
@@ -79,6 +123,19 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
                     else{
                         savePurchaseValueToPref(false);
                     }
+                }*/
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    billingClient.queryPurchasesAsync(
+                            QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(), (billingResult1, list) -> {
+                                if (billingResult1.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                                    if (list.size() > 0) {
+
+                                        handlePurchases(list);
+                                    } else {
+                                        savePurchaseValueToPref(false);
+                                    }
+                                }
+                            });
                 }
             }
 
@@ -100,36 +157,6 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
             purchaseStatus.setText("Purchase Status : Not Purchased");
         }
     }
-    private void setUpToolbar() {
-        toolbar= findViewById(R.id.toolbar);
-        toolbar.setBackgroundColor(ThemeStore.primaryColor(this));
-        toolbar.setTitleTextAppearance(this, R.style.ProductSansTextAppearance);
-        setSupportActionBar(toolbar);
-        //noinspection ConstantConditions
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private SharedPreferences getPreferenceObject() {
-        return PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-    }
-    private SharedPreferences.Editor getPreferenceEditObject() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        return prefs.edit();
-    }
-    private boolean getPurchaseValueFromPref(){
-        return getPreferenceObject().getBoolean( PURCHASE_KEY,false);
-    }
-    private void savePurchaseValueToPref(boolean value){
-        getPreferenceEditObject().putBoolean(PURCHASE_KEY,value).commit();
-    }
 
     //initiate purchase on button click
     public void purchase(View view) {
@@ -142,44 +169,43 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
             billingClient = BillingClient.newBuilder(this).enablePendingPurchases().setListener(this).build();
             billingClient.startConnection(new BillingClientStateListener() {
                 @Override
-                public void onBillingSetupFinished(BillingResult billingResult) {
+                public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
                     if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                         initiatePurchase();
                     } else {
-                        Toast.makeText(getApplicationContext(),"Error "+billingResult.getDebugMessage(),Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Error " + billingResult.getDebugMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
+
                 @Override
                 public void onBillingServiceDisconnected() {
                 }
             });
         }
     }
+
     private void initiatePurchase() {
         List<String> skuList = new ArrayList<>();
         skuList.add(PRODUCT_ID);
         SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
         params.setSkusList(skuList).setType(INAPP);
         billingClient.querySkuDetailsAsync(params.build(),
-                new SkuDetailsResponseListener() {
-                    @Override
-                    public void onSkuDetailsResponse(BillingResult billingResult,
-                                                     List<SkuDetails> skuDetailsList) {
-                        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                            if (skuDetailsList != null && skuDetailsList.size() > 0) {
-                                BillingFlowParams flowParams = BillingFlowParams.newBuilder()
-                                        .setSkuDetails(skuDetailsList.get(0))
-                                        .build();
-                                billingClient.launchBillingFlow(InAppBillingActivity.this, flowParams);
-                            }
-                            else{
-                                //try to add item/product id "purchase" inside managed product in google play console
-                                Toast.makeText(getApplicationContext(),"Purchase Item not Found",Toast.LENGTH_SHORT).show();
-                            }
+                (billingResult, skuDetailsList) -> {
+                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                        if (skuDetailsList != null && skuDetailsList.size() > 0) {
+
+                            BillingFlowParams flowParams = BillingFlowParams.newBuilder()
+                                    .setSkuDetails(skuDetailsList.get(0))
+                                    .build();
+
+                            billingClient.launchBillingFlow(InAppBillingActivity.this, flowParams);
                         } else {
-                            Toast.makeText(getApplicationContext(),
-                                    " Error "+billingResult.getDebugMessage(), Toast.LENGTH_SHORT).show();
+                            //try to add item/product id "purchase" inside managed product in google play console
+                            Toast.makeText(getApplicationContext(), "Purchase Item not Found", Toast.LENGTH_SHORT).show();
                         }
+                    } else {
+                        Toast.makeText(getApplicationContext(),
+                                " Error " + billingResult.getDebugMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -192,11 +218,20 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
         }
         //if item already purchased then check and reflect changes
         else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
-            Purchase.PurchasesResult queryAlreadyPurchasesResult = billingClient.queryPurchases(INAPP);
+          /*  Purchase.PurchasesResult queryAlreadyPurchasesResult = billingClient.queryPurchases(INAPP);
             List<Purchase> alreadyPurchases = queryAlreadyPurchasesResult.getPurchasesList();
             if(alreadyPurchases!=null){
                 handlePurchases(alreadyPurchases);
-            }
+            }*/
+            billingClient.queryPurchasesAsync(
+                    QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(), (billingResult1, list) -> {
+                        if (billingResult1.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                            if (list.size() > 0) {
+
+                                handlePurchases(list);
+                            }
+                        }
+                    });
         }
         //if purchase cancelled
         else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED) {
@@ -207,10 +242,11 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
             Toast.makeText(getApplicationContext(),"Error "+billingResult.getDebugMessage(),Toast.LENGTH_SHORT).show();
         }
     }
+
     void handlePurchases(List<Purchase>  purchases) {
         for(Purchase purchase:purchases) {
             //if item is purchased
-            if (PRODUCT_ID.equals(purchase.getSkus().get(0)) && purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+            if (PRODUCT_ID.equals(purchase.getProducts().get(0)) && purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
                 if (!verifyValidSignature(purchase.getOriginalJson(), purchase.getSignature())) {
                     // Invalid purchase
                     // show error to user
@@ -238,12 +274,12 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
                 }
             }
             //if purchase is pending
-            else if (PRODUCT_ID.equals(purchase.getSkus().get(0)) && purchase.getPurchaseState() == Purchase.PurchaseState.PENDING) {
+            else if (PRODUCT_ID.equals(purchase.getProducts().get(0)) && purchase.getPurchaseState() == Purchase.PurchaseState.PENDING) {
                 Toast.makeText(getApplicationContext(),
                         "Purchase is Pending. Please complete Transaction", Toast.LENGTH_SHORT).show();
             }
             //if purchase is unknown
-            else if (PRODUCT_ID.equals(purchase.getSkus().get(0)) && purchase.getPurchaseState() == Purchase.PurchaseState.UNSPECIFIED_STATE) {
+            else if (PRODUCT_ID.equals(purchase.getProducts().get(0)) && purchase.getPurchaseState() == Purchase.PurchaseState.UNSPECIFIED_STATE) {
                 savePurchaseValueToPref(false);
                 purchaseStatus.setText("Purchase Status : Not Purchased");
                 purchaseButton.setVisibility(View.VISIBLE);
@@ -251,18 +287,6 @@ public class InAppBillingActivity extends AbsBaseActivity implements PurchasesUp
             }
         }
     }
-    AcknowledgePurchaseResponseListener ackPurchase = new AcknowledgePurchaseResponseListener() {
-        @Override
-        public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
-            if(billingResult.getResponseCode()== BillingClient.BillingResponseCode.OK){
-                //if purchase is acknowledged
-                // Grant entitlement to the user. and restart activity
-                savePurchaseValueToPref(true);
-                Toast.makeText(getApplicationContext(), "Item Purchased", Toast.LENGTH_SHORT).show();
-                InAppBillingActivity.this.recreate();
-            }
-        }
-    };
 
     /**
      * Verifies that the purchase was signed correctly for this developer's public key.

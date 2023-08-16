@@ -46,17 +46,21 @@ import com.applovin.mediation.nativeAds.MaxNativeAdListener;
 import com.applovin.mediation.nativeAds.MaxNativeAdLoader;
 import com.applovin.mediation.nativeAds.MaxNativeAdView;
 import com.bumptech.glide.Glide;
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.VideoController;
 import com.google.android.gms.ads.VideoOptions;
-import com.google.android.gms.ads.formats.NativeAdOptions;
-import com.google.android.gms.ads.formats.UnifiedNativeAd;
-import com.google.android.gms.ads.formats.UnifiedNativeAdView;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.android.gms.ads.nativead.NativeAd;
+import com.google.android.gms.ads.nativead.NativeAdOptions;
+import com.google.android.gms.ads.nativead.NativeAdView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
@@ -86,6 +90,7 @@ import com.wachi.musicplayer.util.PreferenceUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
@@ -113,10 +118,11 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
 
     private boolean blockRequestPermissions;
 
+    AdRequest adRequest;
     private AdView adView;
     View contentView;
 
-    private com.google.android.gms.ads.InterstitialAd interstitialAd;
+    private InterstitialAd interstitialAd;
     String applovin_native_unit_id = "";
     String applovin_banner_unit_id = "", applovin_interstitial_unit_id = "";
 
@@ -134,7 +140,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
     // Find the Ad Container
     LinearLayout adContainer;
 
-    private UnifiedNativeAd nativeAd;
+    private NativeAd nativeAd;
     LinearLayout admob_adplaceholder;
     private MaxInterstitialAd minterstitialAd;
     private int retryAttempt;
@@ -234,7 +240,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         max_adplaceholder = contentView.findViewById(R.id.max_adplaceholder);
         max_adplaceholder.setBackgroundColor(ThemeStore.primaryColor(this));
 
-
+        adRequest = new AdRequest.Builder().build();
         configSettings = new FirebaseRemoteConfigSettings.Builder()
                 .setMinimumFetchIntervalInSeconds(cacheExpiration)
                 .build();
@@ -271,7 +277,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                     Log.i(TAG, "applovin_interstitial_unit_id " + applovin_interstitial_unit_id);
 
                     adview();
-                    refreshAd();
+                    admobNativeAd();
                     createNativeAd();
                     AdmobInterstitial();
                     ApplovinInterstitial();
@@ -328,7 +334,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
 
                             if (!purchased) {
                                 adview();
-                                refreshAd();
+                                admobNativeAd();
                                 createNativeAd();
                                 AdmobInterstitial();
                                 ApplovinInterstitial();
@@ -493,10 +499,11 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
     }
 
 
+
     private void showAdmobInterstitial() {
         // Show the ad if it's ready. Otherwise toast and restart the game.
-        if (interstitialAd != null && interstitialAd.isLoaded()) {
-            interstitialAd.show();
+        if (interstitialAd != null) {
+            interstitialAd.show(MainActivity.this);
         } else {
             //Toast.makeText(this, "Ad did not load", Toast.LENGTH_SHORT).show();
             showApplovinInterstitial();
@@ -507,13 +514,33 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
         // Show the ad if it's ready. Otherwise toast and restart the game.
         if (minterstitialAd != null && minterstitialAd.isReady()) {
             minterstitialAd.showAd();
-        } else {
-
-            //showAdmobInterstitial();
-            // Caching is likely already in progress if `isReady()` is false.
-            // Avoid calling `load()` here and instead rely on the callbacks as suggested below.
-            //Toast.makeText(this, "Ad did not load", Toast.LENGTH_SHORT).show();
         }
+
+    }
+
+    public void AdmobInterstitial() {
+
+        if (interstitial_ad_unit_id.equals("")) {
+            interstitial_ad_unit_id = prefs.getString("interstitial_ad_unit_id", "");
+            //Log.i("interstitial_ad_unit_id", interstitial_ad_unit_id);
+        }
+        InterstitialAd.load(this, interstitial_ad_unit_id, adRequest,
+                new InterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull InterstitialAd aInterstitialAd) {
+                        // The mInterstitialAd reference will be null until
+                        // an ad is loaded.
+                        interstitialAd = aInterstitialAd;
+
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        // Handle the error
+                        Log.i(TAG, loadAdError.toString());
+                        interstitialAd = null;
+                    }
+                });
     }
 
     public void ApplovinInterstitial() {
@@ -561,12 +588,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                 retryAttempt++;
                 long delayMillis = TimeUnit.SECONDS.toMillis((long) Math.pow(2, Math.min(6, retryAttempt)));
 
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        minterstitialAd.loadAd();
-                    }
-                }, delayMillis);
+                new Handler().postDelayed(() -> minterstitialAd.loadAd(), delayMillis);
             }
 
             @Override
@@ -589,42 +611,6 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
             }
         }
 
-    }
-
-
-    public void AdmobInterstitial()
-    {
-
-        if(interstitial_ad_unit_id.equals("")||interstitial_ad_unit_id.equals(null)) {
-            interstitial_ad_unit_id = prefs.getString("interstitial_ad_unit_id", "");
-            //Log.i("interstitial_ad_unit_id", interstitial_ad_unit_id);
-        }
-        // Create the InterstitialAd and set the adUnitId.
-        interstitialAd = new com.google.android.gms.ads.InterstitialAd(this);
-        // Defined in res/values/strings.xml
-        interstitialAd.setAdUnitId(interstitial_ad_unit_id);
-
-        interstitialAd.setAdListener(new com.google.android.gms.ads.AdListener() {
-            @Override
-            public void onAdLoaded() {
-                //Toast.makeText(MainActivity.this, "onAdLoaded()", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onAdFailedToLoad(int errorCode) {
-                //Toast.makeText(MainActivity.this,"onAdFailedToLoad() with error code: " + errorCode,Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onAdClosed() {
-
-            }
-        });
-        // Request a new ad if one isn't already loaded, hide the button, and kick off the timer.
-        if (!interstitialAd.isLoading() && !interstitialAd.isLoaded()) {
-            AdRequest adRequest = new AdRequest.Builder().build();
-            interstitialAd.loadAd(adRequest);
-        }
     }
 
 
@@ -688,34 +674,26 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
 
 
     /**
-     * Populates a {@link UnifiedNativeAdView} object with data from a given
-     * {@link UnifiedNativeAd}.
+     * Populates a {@link NativeAdView} object with data from a given
+     * {@link NativeAd}.
      *
      * @param nativeAd the object containing the ad's assets
-     * @param adView          the view to be populated
+     * @param adView   the view to be populated
      */
-    private void populateUnifiedNativeAdView(UnifiedNativeAd nativeAd, UnifiedNativeAdView adView) {
+    private void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
 
-        Button btn_exit=adView.findViewById(R.id.btn_exit);
-        btn_exit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-        Button btn_back=adView.findViewById(R.id.btn_back);
-        btn_back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(isOnline()) {
-                    purchased=prefs.getBoolean(PURCHASE_KEY,false);
-                    if (!purchased) {
-                        refreshAd();
-                    }
+        Button btn_exit = adView.findViewById(R.id.btn_exit);
+        btn_exit.setOnClickListener(v -> finish());
+        Button btn_back = adView.findViewById(R.id.btn_back);
+        btn_back.setOnClickListener(v -> {
+            if (isOnline()) {
+                purchased = prefs.getBoolean(PURCHASE_KEY, false);
+                if (!purchased) {
+                    admobNativeAd();
                 }
-                back_info.setVisibility(View.GONE);
-                admob_adplaceholder.setVisibility(View.GONE);
             }
+            back_info.setVisibility(View.GONE);
+            admob_adplaceholder.setVisibility(View.GONE);
         });
         // Set the media view.
         adView.setMediaView(adView.findViewById(R.id.ad_media));
@@ -793,7 +771,7 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
 
         // Get the video controller for the ad. One will always be provided, even if the ad doesn't
         // have a video asset.
-        VideoController vc = nativeAd.getVideoController();
+        VideoController vc = Objects.requireNonNull(nativeAd.getMediaContent()).getVideoController();
 
         // Updates the UI to say whether or not this ad has a video asset.
         if (vc.hasVideoContent()) {
@@ -825,37 +803,37 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
      * corresponding "populate" method when one is successfully returned.
      *
      */
-    private void refreshAd() {
+    private void admobNativeAd() {
 
         AdLoader.Builder builder = new AdLoader.Builder(this, native_ad_unit_id);
 
-        builder.forUnifiedNativeAd(new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
-            // OnUnifiedNativeAdLoadedListener implementation.
-            @Override
-            public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
-                // If this callback occurs after the activity is destroyed, you must call
-                // destroy and return or you may get a memory leak.
-                if (isDestroyed()) {
-                    unifiedNativeAd.destroy();
-                    return;
-                }
-                // You must call destroy on old ads when you are done with them,
-                // otherwise you will have a memory leak.
-                if (nativeAd != null) {
-                    nativeAd.destroy();
-                }
-                nativeAd = unifiedNativeAd;
-                LinearLayout frameLayout =
-                        findViewById(R.id.admob_adplaceholder);
-                UnifiedNativeAdView adView = (UnifiedNativeAdView) getLayoutInflater()
-                        .inflate(R.layout.ad_unified, null);
+        builder.forNativeAd(aNativeAd -> {
+                    // Show the ad.
+                    if (isDestroyed()) {
+                        aNativeAd.destroy();
+                        return;
+                    }
+                    if (nativeAd != null) {
+                        nativeAd.destroy();
+                    }
+                    nativeAd = aNativeAd;
+                    LinearLayout frameLayout =
+                            findViewById(R.id.admob_adplaceholder);
+                    NativeAdView adView = (NativeAdView) getLayoutInflater()
+                            .inflate(R.layout.ad_unified, null);
 
-                populateUnifiedNativeAdView(unifiedNativeAd, adView);
-                frameLayout.removeAllViews();
-                frameLayout.addView(adView);
-            }
+                    populateNativeAdView(nativeAd, adView);
+                    frameLayout.removeAllViews();
+                    frameLayout.addView(adView);
+                })
+                .withAdListener(new AdListener() {
+                    @Override
+                    public void onAdFailedToLoad(LoadAdError adError) {
+                        // Handle the failure by logging, altering the UI, and so on.
+                    }
+                })
+                .build();
 
-        });
 
         VideoOptions videoOptions = new VideoOptions.Builder()
                 .setStartMuted(true)
@@ -867,14 +845,10 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
 
         builder.withNativeAdOptions(adOptions);
 
-        AdLoader adLoader = builder.withAdListener(new com.google.android.gms.ads.AdListener() {
-            @Override
-            public void onAdFailedToLoad(int errorCode) {
-                //	Toast.makeText(MainActivity.this, "Failed to load native ad: "+ errorCode, Toast.LENGTH_SHORT).show();
-            }
+        AdLoader adLoader = builder.withAdListener(new AdListener() {
         }).build();
 
-        adLoader.loadAd(new AdRequest.Builder().build());
+        adLoader.loadAds(new AdRequest.Builder().build(), 3);
 
 
     }
@@ -909,12 +883,10 @@ public class MainActivity extends AbsSlidingMusicPanelActivity {
                 if (adView != null) {
                     adView.resume();
                 }
-                interstitialAd = new com.google.android.gms.ads.InterstitialAd(this);
 
                 AdmobInterstitial();
                 ApplovinInterstitial();
-                refreshAd();
-
+                admobNativeAd();
 
 
                 //Toast.makeText(MainActivity.this, String.valueOf(purchased),Toast.LENGTH_SHORT).show();

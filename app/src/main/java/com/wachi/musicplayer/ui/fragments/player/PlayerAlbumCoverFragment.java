@@ -62,30 +62,14 @@ public class PlayerAlbumCoverFragment extends AbsMusicServiceFragment implements
         return view;
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        viewPager.addOnPageChangeListener(this);
-        viewPager.setOnTouchListener(new View.OnTouchListener() {
-            GestureDetector gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
-                @Override
-                public boolean onSingleTapConfirmed(MotionEvent e) {
-                    if (callbacks != null) {
-                        callbacks.onToolbarToggled();
-                        return true;
-                    }
-                    return super.onSingleTapConfirmed(e);
-                }
-            });
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return gestureDetector.onTouchEvent(event);
+    private final AlbumCoverPagerAdapter.AlbumCoverFragment.ColorReceiver colorReceiver = new AlbumCoverPagerAdapter.AlbumCoverFragment.ColorReceiver() {
+        @Override
+        public void onColorReady(int color, int requestCode) {
+            if (currentPosition == requestCode) {
+                notifyColorChange(color);
             }
-        });
-        progressViewUpdateHelper = new MusicProgressViewUpdateHelper(this, 500, 1000);
-        progressViewUpdateHelper.start();
-    }
+        }
+    };
 
     @Override
     public void onDestroyView() {
@@ -129,14 +113,30 @@ public class PlayerAlbumCoverFragment extends AbsMusicServiceFragment implements
         }
     }
 
-    private AlbumCoverPagerAdapter.AlbumCoverFragment.ColorReceiver colorReceiver = new AlbumCoverPagerAdapter.AlbumCoverFragment.ColorReceiver() {
-        @Override
-        public void onColorReady(int color, int requestCode) {
-            if (currentPosition == requestCode) {
-                notifyColorChange(color);
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        viewPager.addOnPageChangeListener(this);
+        viewPager.setOnTouchListener(new View.OnTouchListener() {
+            final GestureDetector gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapConfirmed(MotionEvent e) {
+                    if (callbacks != null) {
+                        callbacks.onToolbarToggled();
+                        return true;
+                    }
+                    return super.onSingleTapConfirmed(e);
+                }
+            });
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return gestureDetector.onTouchEvent(event);
             }
-        }
-    };
+        });
+        progressViewUpdateHelper = new MusicProgressViewUpdateHelper(this, 500, 1000);
+        progressViewUpdateHelper.start();
+    }
 
     @Override
     public void onPageScrollStateChanged(int state) {

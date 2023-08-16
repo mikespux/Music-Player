@@ -15,6 +15,7 @@ import androidx.annotation.FloatRange;
 import androidx.annotation.LayoutRes;
 import androidx.fragment.app.Fragment;
 
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.wachi.musicplayer.R;
 import com.wachi.musicplayer.helper.MusicPlayerRemote;
 import com.wachi.musicplayer.ui.fragments.player.AbsPlayerFragment;
@@ -24,7 +25,6 @@ import com.wachi.musicplayer.ui.fragments.player.card.CardPlayerFragment;
 import com.wachi.musicplayer.ui.fragments.player.flat.FlatPlayerFragment;
 import com.wachi.musicplayer.util.PreferenceUtil;
 import com.wachi.musicplayer.util.ViewUtil;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -43,7 +43,7 @@ public abstract class AbsSlidingMusicPanelActivity extends AbsMusicServiceActivi
     private MiniPlayerFragment miniPlayerFragment;
 
     private ValueAnimator navigationBarColorAnimator;
-    private ArgbEvaluator argbEvaluator = new ArgbEvaluator();
+    private final ArgbEvaluator argbEvaluator = new ArgbEvaluator();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

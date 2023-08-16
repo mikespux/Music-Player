@@ -37,7 +37,7 @@ public class SortedLongCursor extends AbstractCursor {
     // the map of external indices to internal indices
     private List<Integer> mOrderedPositions;
     // this contains the ids that weren't found in the underlying cursor
-    private List<Long> mMissingIds;
+    private final List<Long> mMissingIds;
     // this contains the mapped cursor positions and afterwards the extra ids that weren't found
     private HashMap<Long, Integer> mMapCursorPositions;
 

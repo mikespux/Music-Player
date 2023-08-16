@@ -9,11 +9,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 import com.wachi.musicplayer.adapter.base.MediaEntryViewHolder;
 import com.wachi.musicplayer.model.Genre;
 import com.wachi.musicplayer.util.MusicUtil;
 import com.wachi.musicplayer.util.NavigationUtil;
-import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ public class GenreAdapter extends RecyclerView.Adapter<GenreAdapter.ViewHolder> 
     @NonNull
     private final AppCompatActivity activity;
     private List<Genre> dataSet;
-    private int itemLayoutRes;
+    private final int itemLayoutRes;
 
     public GenreAdapter(@NonNull AppCompatActivity activity, List<Genre> dataSet, @LayoutRes int itemLayoutRes) {
         this.activity = activity;

@@ -75,8 +75,8 @@ public abstract class CustomFragmentStatePagerAdapter extends PagerAdapter {
     private final FragmentManager mFragmentManager;
     private FragmentTransaction mCurTransaction = null;
 
-    private List<Fragment.SavedState> mSavedState = new ArrayList<>();
-    private List<Fragment> mFragments = new ArrayList<>();
+    private final List<Fragment.SavedState> mSavedState = new ArrayList<>();
+    private final List<Fragment> mFragments = new ArrayList<>();
     private Fragment mCurrentPrimaryItem = null;
 
     public CustomFragmentStatePagerAdapter(FragmentManager fm) {
